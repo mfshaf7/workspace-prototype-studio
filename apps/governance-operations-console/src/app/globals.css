@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+:root {
+  --canvas: #080b0f;
+  --canvas-soft: #10151c;
+  --panel: rgba(245, 239, 226, 0.075);
+  --panel-strong: rgba(245, 239, 226, 0.115);
+  --line: rgba(245, 239, 226, 0.16);
+  --line-strong: rgba(245, 239, 226, 0.28);
+  --text: #f7f0e4;
+  --muted: #a9a396;
+  --subtle: #777166;
+  --teal: #58e3d0;
+  --blue: #7aa7ff;
+  --amber: #e7b95b;
+  --green: #77d68a;
+  --red: #ff7b7b;
+  --shadow: 0 30px 90px rgba(0, 0, 0, 0.52);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--canvas);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(88, 227, 208, 0.16), transparent 28%),
+    radial-gradient(circle at 88% 0%, rgba(122, 167, 255, 0.18), transparent 34%),
+    linear-gradient(135deg, #06080c 0%, #0c1118 46%, #16120d 100%);
+  font-family:
+    "Satoshi",
+    "IBM Plex Sans",
+    "Aptos",
+    "Helvetica Neue",
+    sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.console-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 28px;
+}
+
+.console-shell::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background-image:
+    linear-gradient(rgba(245, 239, 226, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 239, 226, 0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.75), transparent 75%);
+}
+
+.console-stage {
+  position: relative;
+  z-index: 1;
+  max-width: 1480px;
+  margin: 0 auto;
+}
+
+.glass-panel {
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.035)),
+    rgba(10, 13, 17, 0.72);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(28px);
+}
+
+.hairline {
+  border-color: var(--line);
+}
+
+.mono {
+  font-family:
+    "JetBrains Mono",
+    "SFMono-Regular",
+    "Cascadia Mono",
+    monospace;
+}
+
+.pulse-orb {
+  position: relative;
+}
+
+.pulse-orb::after {
+  position: absolute;
+  inset: -7px;
+  border-radius: 999px;
+  content: "";
+  border: 1px solid currentColor;
+  opacity: 0.22;
+  animation: pulse-ring 2.8s ease-out infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.72);
+    opacity: 0.42;
+  }
+
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 860px) {
+  .console-shell {
+    padding: 16px;
+  }
+}
+
