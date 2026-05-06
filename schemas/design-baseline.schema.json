@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Design Baseline Record",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "prototype_id",
+    "baseline_id",
+    "approved_on",
+    "approved_by",
+    "decision",
+    "evidence_refs"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "decision": { "enum": ["approved", "rejected", "superseded"] },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } }
+  }
+}
+

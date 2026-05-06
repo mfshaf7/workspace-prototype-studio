@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Prototype Graduation Record",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "prototype_id",
+    "graduation_id",
+    "decision",
+    "target_home",
+    "approved_by",
+    "approved_on"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "decision": {
+      "enum": ["workspace-delivery-art", "existing-repo", "new-repo", "client-portfolio", "retire"]
+    },
+    "target_home": { "type": "string", "minLength": 1 }
+  }
+}
+

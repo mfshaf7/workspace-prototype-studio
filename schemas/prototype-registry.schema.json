@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Workspace Prototype Registry",
+  "type": "object",
+  "required": ["schema_version", "studio", "prototypes"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "studio": { "type": "object" },
+    "prototypes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/prototype" }
+    }
+  },
+  "$defs": {
+    "prototype": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "portfolio",
+        "lifecycle",
+        "owner",
+        "visibility_tier",
+        "data_mode",
+        "mutation_boundary",
+        "paths"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "portfolio": {
+          "enum": ["internal-product", "client-app", "workspace-system", "experiment"]
+        },
+        "lifecycle": {
+          "enum": [
+            "exploring",
+            "candidate",
+            "baseline-approved",
+            "graduating",
+            "graduated",
+            "retired"
+          ]
+        },
+        "visibility_tier": {
+          "enum": ["private-internal", "operator-review", "client-review", "public-demo"]
+        },
+        "data_mode": {
+          "enum": ["mock", "synthetic", "real-readonly", "real-mutable"]
+        },
+        "mutation_boundary": {
+          "enum": ["none", "read-only", "prototype-local", "external-sandbox", "real-system"]
+        }
+      }
+    }
+  }
+}
+

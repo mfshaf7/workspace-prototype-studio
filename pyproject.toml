@@ -1,0 +1,9 @@
+[project]
+name = "workspace-prototype-studio"
+version = "0.1.0"
+description = "Fast governed prototype and product-incubation lane for the workspace."
+requires-python = ">=3.11"
+dependencies = [
+  "PyYAML>=6.0",
+]
+

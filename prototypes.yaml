@@ -1,0 +1,33 @@
+schema_version: 1
+studio:
+  owner_repo: workspace-prototype-studio
+  art_anchor_ref: openproject://work_packages/681
+  initiative_family: product-prototype-delivery
+  default_visibility_tier: private-internal
+  default_data_mode: synthetic
+  default_mutation_boundary: none
+prototypes:
+  - id: governance-operations-console
+    name: Workspace Governance Operations Console
+    portfolio: internal-product
+    lifecycle: candidate
+    owner: Workspace Governance
+    product_owner: mfshaf7
+    delivery_refs:
+      - openproject://work_packages/417
+      - openproject://work_packages/681
+      - openproject://work_packages/694
+    visibility_tier: private-internal
+    data_mode: synthetic
+    mutation_boundary: read-only
+    target_runtime_lane: prototype-devint
+    design_baseline_ref: null
+    graduation_ref: null
+    retirement_ref: null
+    security_review_refs: []
+    paths:
+      brief: docs/prototypes/governance-operations-console/brief.md
+      backlog: docs/prototypes/governance-operations-console/backlog.md
+      change_log: docs/prototypes/governance-operations-console/change-log.md
+      decision_log: docs/prototypes/governance-operations-console/decision-log.md
+
