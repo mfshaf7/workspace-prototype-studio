@@ -79,7 +79,12 @@
 
 .summaryCard {
   position: relative;
-  padding: 0.86rem 0.9rem 0.9rem 1rem;
+  border-color: rgba(var(--panel-rgb), 0.26);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(var(--panel-rgb), 0.13), transparent 38%),
+    linear-gradient(90deg, rgba(var(--panel-rgb), 0.08), transparent 66%),
+    rgba(7, 9, 13, 0.72);
+  padding: 0.76rem 0.82rem 0.78rem 0.92rem;
 }
 
 .summaryCard::before {
@@ -95,9 +100,9 @@
 }
 
 .summaryValue {
-  margin: 0.45rem 0 0;
+  margin: 0.36rem 0 0;
   color: rgba(255, 247, 231, 0.96);
-  font-size: 1.5rem;
+  font-size: 1.34rem;
   font-weight: 750;
   letter-spacing: 0;
 }
@@ -105,7 +110,7 @@
 .summaryLabel {
   margin: 0.12rem 0 0;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   line-height: 1.35;
 }
 
@@ -245,7 +250,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  margin-top: 0.7rem;
+  margin-top: 0.58rem;
 }
 
 .emptyState {
