@@ -73,7 +73,7 @@ const deliverySurfaces: DeliverySurfaceConfig[] = [
     tone: "warn",
   },
   {
-    description: "Control ready and active packages without flooding child fronts into the desk.",
+    description: "Control ready and active packages without flooding child work items into the desk.",
     id: "execution-board",
     kicker: "04",
     title: "Execution Board",
@@ -470,8 +470,8 @@ function packageRegisterRow(
     id: deliveryPackage.delivery_package_id,
     index: String(index + 1).padStart(2, "0"),
     onAction: () => onSelectPackage(deliveryPackage.delivery_package_id),
-    statusLabel: stageLabel(deliveryPackage.workflow_stage),
-    statusTone: surface.tone,
+    statusLabel: deliveryPackage.package_posture,
+    statusTone: deliveryPackage.tone,
     title: deliveryPackage.display_name,
   };
 }
@@ -492,7 +492,7 @@ function deliveryOverviewStats(
     {
       label: "Packages",
       tone: "info",
-      value: String(model.board_summary.total_packages),
+      value: String(model.packages.length),
     },
     {
       label: "Intake",
@@ -542,7 +542,7 @@ function stageEntryCopy(surface: DeliverySurfaceConfig) {
     case "work-design":
       return "Inspect packages that still need work design before they can move to refinement.";
     case "refinement":
-      return "Inspect packages that need metadata readiness before they can enter execution control.";
+      return "Inspect packages that need refinement before they can enter execution control.";
     case "execution-board":
       return "Select packages, switch board view, inspect tree context, and open the required package action.";
   }
@@ -608,7 +608,7 @@ function nextSurfaceHint(stage: DeliveryWorkflowStage) {
     case "work_design":
       return "Refinement after the package tree draft is accepted.";
     case "refinement":
-      return "Execution Board after metadata readiness apply is accepted.";
+      return "Execution Board after refinement apply is accepted.";
     case "execution":
       return "Package Actions from the Execution Board.";
     case "audit_only":
