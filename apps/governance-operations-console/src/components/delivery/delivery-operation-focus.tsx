@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 
 import type {
   DeliveryPackageSummary,
@@ -16,7 +17,6 @@ import {
 } from "@/data/delivery-selectors";
 
 import {
-  DeliveryActionButton,
   DeliveryModalShell,
   DeliveryPanel,
   DeliveryRegisterTable,
@@ -102,14 +102,24 @@ export function DeliveryOperationFocus({
   );
 
   return (
-    <div className={styles.shell}>
-      <DeliveryPanel className={styles.hero} tone="warn">
-        <div className={styles.heroTop}>
-          <DeliverySectionHeader
-            kicker="Delivery Operation Desk"
-            title="Delivery System"
-            description="Delivery now uses Intake, Work Design, Refinement, and Execution Board as separate operator jobs over one OOS-shaped read model."
-          />
+    <div
+      className="operation-desk-content delivery-operation-content"
+      data-operation-desk="delivery"
+    >
+      <div className="desk-overview delivery-operation-overview rounded-3xl p-5 md:p-6">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+          <div className="min-w-0">
+            <p className="mono desk-overview-kicker text-xs font-black uppercase tracking-[0.22em]">
+              Operations Desk
+            </p>
+            <h2 className="desk-overview-title mt-2 text-3xl font-semibold tracking-[-0.055em] md:text-4xl">
+              Delivery
+            </h2>
+            <p className="desk-overview-description mt-3 max-w-3xl text-sm leading-6">
+              Control ART intake, work design, refinement, and execution board
+              inspection from one Delivery read model.
+            </p>
+          </div>
           <div className={styles.sourceStack}>
             <DeliveryStatusPill tone="info">{model.source_truth}</DeliveryStatusPill>
             <DeliveryStatusPill tone={projectionTone(model)}>
@@ -117,9 +127,33 @@ export function DeliveryOperationFocus({
             </DeliveryStatusPill>
           </div>
         </div>
-      </DeliveryPanel>
 
-      <div className={styles.tabs} role="tablist" aria-label="Delivery surfaces">
+        <div className="desk-overview-count-grid prototype-count-grid proposal-count-grid mt-5 grid gap-2 md:grid-cols-3 xl:grid-cols-6">
+          {deliveryOverviewStats(model, executionCount).map((count) => (
+            <div
+              className={statusCardClass(
+                count.tone,
+                "desk-overview-count-card proposal-count-card prototype-count-card rounded-2xl p-3",
+              )}
+              key={count.label}
+            >
+              <p className="mono text-[9px] font-black uppercase tracking-[0.18em]">
+                {count.label}
+              </p>
+              <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.04em]">
+                {count.value}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div
+        className="desk-tab-strip delivery-tab-strip mt-5 rounded-[22px] p-1.5"
+        role="tablist"
+        aria-label="Delivery surfaces"
+        style={{ "--desk-tab-count": deliverySurfaces.length } as CSSProperties}
+      >
         {deliverySurfaces.map((surface) => {
           const isActive = activeSurfaceId === surface.id;
           const count =
@@ -132,17 +166,18 @@ export function DeliveryOperationFocus({
           return (
             <button
               aria-selected={isActive}
-              className={`${styles.tab} ${isActive ? styles.tabActive : ""}`}
+              className={`desk-tab-button ${deskTabToneClass(surface.tone)} ${
+                isActive ? "desk-tab-button-active" : ""
+              }`}
               key={surface.id}
               onClick={() => setActiveSurfaceId(surface.id)}
               role="tab"
               type="button"
             >
-              <p className={styles.tabKicker}>{surface.kicker}</p>
-              <p className={styles.tabTitle}>{surface.title}</p>
-              <p className={styles.tabMeta}>
+              <span>{surface.title}</span>
+              <span>
                 {count} {count === 1 ? "item" : "items"}
-              </p>
+              </span>
             </button>
           );
         })}
@@ -193,28 +228,80 @@ function DeliveryBoardEntry({
   onOpenBoard: () => void;
 }) {
   return (
-    <DeliveryPanel className={styles.boardEntry} selected tone="warn">
-      <div className={styles.boardEntryCopy}>
-        <DeliverySectionHeader
-          kicker="Execution Board"
-          title="Open The Delivery Control Workspace"
-          description="The board opens in a wide workspace so package posture, ART Map, ART Tree, and selected package actions do not fight for space inside the command rail."
-        />
+    <section className="desk-workflow-panel desk-work-surface mt-4 rounded-3xl p-4 md:p-5">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+        <div>
+          <p className="mono desk-work-surface-kicker text-[10px] font-black uppercase tracking-[0.2em]">
+            Execution Board
+          </p>
+          <h3 className="desk-work-surface-title mt-2 text-2xl font-semibold tracking-[-0.045em]">
+            Open the delivery control workspace.
+          </h3>
+          <p className="desk-work-surface-description mt-2 max-w-2xl text-sm leading-6">
+            Inspect package posture, ART map, ART tree, and selected package
+            actions in the wide board workspace.
+          </p>
+        </div>
       </div>
-      <div className={styles.boardEntryFacts}>
-        <FactRow label="Board Packages" value={String(executionCount)} />
-        <FactRow
-          label="Projection"
-          value={`${model.source_truth} / ${model.projection_state.status.replaceAll("_", " ")}`}
-        />
-        <FactRow label="Source Revision" value={model.projection_state.source_revision} />
+
+      <div className="portfolio-selected-flow delivery-execution-overview mt-4 rounded-3xl p-3">
+        {[
+          ["Packages", String(executionCount), "info"],
+          ["Blocked", String(model.board_summary.blocked_count), "danger"],
+          ["Closeout", String(model.board_summary.closeout_pending_count), "warn"],
+          [
+            "Projection",
+            model.projection_state.status.replaceAll("_", " "),
+            projectionTone(model),
+          ],
+        ].map(([label, value, tone]) => (
+          <div
+            className={statusCardClass(
+              tone as DeliveryTone,
+              "portfolio-selected-flow-step rounded-2xl p-3",
+            )}
+            key={label}
+          >
+            <p className="mono text-[8px] font-black uppercase tracking-[0.16em]">
+              {label}
+            </p>
+            <p className="mt-2 text-xs font-semibold leading-5">{value}</p>
+          </div>
+        ))}
       </div>
-      <div className={styles.boardEntryAction}>
-        <DeliveryActionButton onClick={onOpenBoard}>
-          Open Execution Board
-        </DeliveryActionButton>
+
+      <div className="desk-entry-dock delivery-intake-draft-dock delivery-execution-entry-dock mt-8">
+        <button
+          className="delivery-execution-primary-action delivery-intake-primary-action intake-focus-draft-action desk-entry-card w-full rounded-[24px] p-5 text-left"
+          type="button"
+          title="Open Delivery execution board"
+          onClick={onOpenBoard}
+        >
+          <div>
+            <div>
+              <p className="mono text-[11px] font-black uppercase tracking-[0.22em]">
+                Board entry
+              </p>
+              <h3 className="intake-focus-draft-action-title mt-3 font-semibold tracking-[-0.06em]">
+                Open Board
+              </h3>
+              <p className="mt-2 max-w-xl text-sm leading-6">
+                Select packages, switch board view, inspect tree context, and
+                open the required package action.
+              </p>
+            </div>
+            <div className="mt-7 flex justify-end">
+              <span className="intake-focus-draft-action-cue mono rounded-2xl px-4 py-3">
+                View Board
+              </span>
+            </div>
+          </div>
+          <span className="intake-focus-draft-action-arrow mono" aria-hidden="true">
+            &gt;
+          </span>
+        </button>
       </div>
-    </DeliveryPanel>
+    </section>
   );
 }
 
@@ -245,7 +332,7 @@ function DeliveryStageSurface({
 
   return (
     <div className={styles.stageLayout}>
-      <DeliveryPanel className={styles.stagePanel} tone={surface.tone}>
+      <section className="desk-workflow-panel desk-work-surface mt-4 rounded-3xl p-4 md:p-5">
         <div className={styles.registerHeader}>
           <DeliverySectionHeader
             kicker={surface.title}
@@ -263,7 +350,7 @@ function DeliveryStageSurface({
             No projected package currently belongs to this Delivery surface.
           </div>
         )}
-      </DeliveryPanel>
+      </section>
 
       <DeliveryPanel
         className={styles.contextPanel}
@@ -317,6 +404,52 @@ function packageRegisterRow(
     statusTone: surface.tone,
     title: deliveryPackage.display_name,
   };
+}
+
+function deskTabToneClass(tone: DeliveryTone) {
+  return `desk-tab-summary-${tone}`;
+}
+
+function statusCardClass(tone: DeliveryTone, className = "") {
+  return `status-card status-card-${tone} ${className}`.trim();
+}
+
+function deliveryOverviewStats(
+  model: DeliveryReadModel,
+  executionCount: number,
+): Array<{ label: string; tone: DeliveryTone; value: string }> {
+  return [
+    {
+      label: "Packages",
+      tone: "info",
+      value: String(model.board_summary.total_packages),
+    },
+    {
+      label: "Intake",
+      tone: getDeliveryWorkflowStageCount("intake", model) > 0 ? "warn" : "muted",
+      value: String(getDeliveryWorkflowStageCount("intake", model)),
+    },
+    {
+      label: "Design",
+      tone: getDeliveryWorkflowStageCount("work_design", model) > 0 ? "info" : "muted",
+      value: String(getDeliveryWorkflowStageCount("work_design", model)),
+    },
+    {
+      label: "Refinement",
+      tone: getDeliveryWorkflowStageCount("refinement", model) > 0 ? "warn" : "muted",
+      value: String(getDeliveryWorkflowStageCount("refinement", model)),
+    },
+    {
+      label: "Execution",
+      tone: executionCount > 0 ? "info" : "muted",
+      value: String(executionCount),
+    },
+    {
+      label: "Blocked",
+      tone: model.board_summary.blocked_count > 0 ? "danger" : "ok",
+      value: String(model.board_summary.blocked_count),
+    },
+  ];
 }
 
 function FactRow({ label, value }: { label: string; value: string }) {
