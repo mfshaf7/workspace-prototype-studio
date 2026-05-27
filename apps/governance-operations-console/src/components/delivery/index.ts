@@ -9,3 +9,5 @@ export {
   DeliveryTreeNodeCard,
   type DeliveryRegisterRow,
 } from "./delivery-patterns";
+
+export { DeliveryExecutionBoard } from "./delivery-execution-board";

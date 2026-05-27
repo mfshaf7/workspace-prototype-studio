@@ -1,0 +1,328 @@
+.board {
+  display: grid;
+  gap: 1rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tabs {
+  display: inline-flex;
+  gap: 0.35rem;
+  border: 1px solid rgba(245, 239, 226, 0.14);
+  border-radius: 1rem;
+  padding: 0.25rem;
+  background: rgba(8, 10, 14, 0.72);
+}
+
+.tab {
+  border: 1px solid transparent;
+  border-radius: 0.78rem;
+  padding: 0.58rem 0.78rem;
+  color: var(--muted);
+  background: transparent;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.tab:hover,
+.tab:focus-visible {
+  color: var(--text);
+  border-color: rgba(255, 193, 90, 0.22);
+}
+
+.tabActive {
+  color: var(--text);
+  border-color: rgba(255, 193, 90, 0.44);
+  background: rgba(255, 193, 90, 0.11);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.summaryCard {
+  padding: 0.85rem;
+}
+
+.summaryValue {
+  margin: 0.45rem 0 0;
+  color: var(--text);
+  font-size: 1.5rem;
+  font-weight: 750;
+  letter-spacing: 0;
+}
+
+.summaryLabel {
+  margin: 0.12rem 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
+  gap: 1rem;
+  align-items: start;
+}
+
+.mainPane,
+.selectedPane {
+  min-width: 0;
+  padding: 1rem;
+}
+
+.controlColumns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.postureColumn {
+  min-width: 0;
+  border: 1px solid rgba(245, 239, 226, 0.1);
+  border-radius: 1rem;
+  padding: 0.7rem;
+  background: rgba(245, 239, 226, 0.035);
+}
+
+.postureHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.65rem;
+}
+
+.postureTitle {
+  margin: 0;
+  color: var(--amber);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.packageStack {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.packageCard {
+  width: 100%;
+  border: 1px solid rgba(245, 239, 226, 0.14);
+  border-radius: 1rem;
+  padding: 0.78rem;
+  color: var(--text);
+  background: rgba(8, 10, 14, 0.76);
+  text-align: left;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.packageCard:hover,
+.packageCard:focus-visible {
+  border-color: rgba(255, 193, 90, 0.38);
+  transform: translateY(-1px);
+}
+
+.packageCardSelected {
+  border-color: rgba(255, 193, 90, 0.66);
+  box-shadow:
+    0 0 0 1px rgba(255, 193, 90, 0.1),
+    0 0 24px rgba(255, 193, 90, 0.12);
+}
+
+.packageKicker {
+  margin: 0;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.packageTitle {
+  margin: 0.32rem 0 0;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 750;
+  letter-spacing: 0;
+  line-height: 1.18;
+}
+
+.packageSummary {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.73rem;
+  line-height: 1.45;
+}
+
+.packageMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.7rem;
+}
+
+.emptyState {
+  border: 1px dashed rgba(245, 239, 226, 0.18);
+  border-radius: 1rem;
+  padding: 1rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.mapGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(240px, 1fr));
+  gap: 0.85rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.mapLane {
+  min-width: 240px;
+  border: 1px solid rgba(139, 181, 255, 0.18);
+  border-radius: 1.1rem;
+  padding: 0.8rem;
+  background: rgba(8, 17, 31, 0.76);
+}
+
+.mapLaneSelected {
+  border-color: rgba(255, 193, 90, 0.44);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 193, 90, 0.1), transparent 42%),
+    rgba(15, 18, 26, 0.86);
+}
+
+.mapLaneTitle {
+  margin: 0;
+  color: var(--amber);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.mapLaneSummary {
+  margin: 0.25rem 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.treeLayout {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.treeChildren {
+  display: grid;
+  gap: 0.6rem;
+  margin-left: 1rem;
+  padding-left: 0.9rem;
+  border-left: 1px solid rgba(139, 181, 255, 0.22);
+}
+
+.selectedHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.selectedTitle {
+  margin: 0.35rem 0 0;
+  color: var(--text);
+  font-size: 1.25rem;
+  font-weight: 750;
+  letter-spacing: 0;
+  line-height: 1.1;
+}
+
+.selectedSource {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.selectedSection {
+  margin-top: 1rem;
+  border-top: 1px solid rgba(245, 239, 226, 0.1);
+  padding-top: 0.85rem;
+}
+
+.selectedSectionTitle {
+  margin: 0 0 0.6rem;
+  color: var(--amber);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.actionList,
+.auditList,
+.factList {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.actionRow,
+.auditRow,
+.factRow {
+  border: 1px solid rgba(245, 239, 226, 0.1);
+  border-radius: 0.9rem;
+  padding: 0.68rem;
+  background: rgba(245, 239, 226, 0.04);
+}
+
+.rowTitle {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.rowDetail {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 1180px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryGrid,
+  .controlColumns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

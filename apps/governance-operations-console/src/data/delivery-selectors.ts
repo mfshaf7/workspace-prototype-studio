@@ -163,11 +163,17 @@ export function getSelectedPackage(
 export function getSelectedPackageDetails(
   model: DeliveryReadModel = deliveryReadModel,
 ): DeliverySelectedPackage | null {
+  return getPackageDetailsById(model.selected_delivery_package_id, model);
+}
+
+export function getPackageDetailsById(
+  deliveryPackageId: string,
+  model: DeliveryReadModel = deliveryReadModel,
+): DeliverySelectedPackage | null {
   return (
     model.selected_packages.find(
       (deliveryPackage) =>
-        deliveryPackage.delivery_package_id ===
-        model.selected_delivery_package_id,
+        deliveryPackage.delivery_package_id === deliveryPackageId,
     ) ?? null
   );
 }
