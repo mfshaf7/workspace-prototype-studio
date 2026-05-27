@@ -1,11 +1,11 @@
 .shell {
   display: grid;
-  gap: 1rem;
+  gap: 0.9rem;
   color: var(--text);
 }
 
 .hero {
-  padding: 1.15rem;
+  padding: 1.05rem 1.15rem;
 }
 
 .heroTop {
@@ -29,12 +29,20 @@
 }
 
 .tab {
+  --tab-rgb: 255, 193, 90;
+  position: relative;
   min-width: 0;
-  border: 1px solid rgba(245, 239, 226, 0.14);
-  border-radius: 1rem;
-  padding: 0.8rem 0.9rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 240, 216, 0.11);
+  border-radius: 1.05rem;
+  padding: 0.78rem 0.85rem 0.78rem 0.95rem;
   color: var(--muted);
-  background: rgba(8, 10, 14, 0.78);
+  background:
+    linear-gradient(180deg, rgba(255, 247, 231, 0.035), rgba(255, 255, 255, 0.012)),
+    rgba(0, 0, 0, 0.26);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 28px rgba(0, 0, 0, 0.16);
   text-align: left;
   transition:
     border-color 160ms ease,
@@ -44,22 +52,44 @@
     color 160ms ease;
 }
 
+.tab::before {
+  position: absolute;
+  top: 0.65rem;
+  bottom: 0.65rem;
+  left: 0;
+  width: 3px;
+  border-radius: 0 999px 999px 0;
+  background: rgba(255, 240, 216, 0.14);
+  content: "";
+}
+
+.tab:nth-child(2),
+.tab:nth-child(4) {
+  --tab-rgb: 139, 181, 255;
+}
+
 .tab:hover,
 .tab:focus-visible {
-  border-color: rgba(255, 193, 90, 0.34);
+  border-color: rgba(var(--tab-rgb), 0.36);
   color: var(--text);
   transform: translateY(-1px);
 }
 
 .tabActive {
-  border-color: rgba(255, 193, 90, 0.56);
+  border-color: rgba(var(--tab-rgb), 0.54);
   background:
-    radial-gradient(circle at 0% 0%, rgba(255, 193, 90, 0.12), transparent 42%),
-    rgba(17, 15, 12, 0.9);
+    radial-gradient(circle at 0% 0%, rgba(var(--tab-rgb), 0.15), transparent 42%),
+    linear-gradient(90deg, rgba(var(--tab-rgb), 0.12), transparent 64%),
+    rgba(7, 9, 13, 0.86);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0 22px rgba(255, 193, 90, 0.1);
+    0 0 22px rgba(var(--tab-rgb), 0.11);
   color: var(--text);
+}
+
+.tabActive::before {
+  background: rgba(var(--tab-rgb), 0.9);
+  box-shadow: 0 0 18px rgba(var(--tab-rgb), 0.34);
 }
 
 .tabKicker {
@@ -76,7 +106,7 @@
   margin: 0.28rem 0 0;
   overflow: hidden;
   color: inherit;
-  font-size: 0.9rem;
+  font-size: 0.93rem;
   font-weight: 750;
   letter-spacing: 0;
   line-height: 1.15;
@@ -87,7 +117,7 @@
 .tabMeta {
   margin: 0.28rem 0 0;
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   line-height: 1.35;
 }
 
@@ -99,11 +129,20 @@
 }
 
 .boardEntry {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.56fr) auto;
   gap: 1rem;
   align-items: center;
-  padding: 1.1rem;
+  padding: 1.18rem 1.18rem 1.18rem 1.32rem;
+}
+
+.boardEntry::after {
+  position: absolute;
+  inset: auto 1.15rem 0.95rem 1.32rem;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(139, 181, 255, 0.28), transparent 72%);
+  content: "";
 }
 
 .boardEntryCopy {
@@ -123,7 +162,7 @@
 .stagePanel,
 .contextPanel {
   min-width: 0;
-  padding: 1rem;
+  padding: 1.05rem;
 }
 
 .registerHeader {
@@ -141,10 +180,13 @@
 }
 
 .factRow {
-  border: 1px solid rgba(245, 239, 226, 0.1);
+  border: 1px solid rgba(255, 240, 216, 0.11);
   border-radius: 0.9rem;
-  padding: 0.72rem;
-  background: rgba(245, 239, 226, 0.04);
+  padding: 0.74rem 0.78rem;
+  background:
+    linear-gradient(180deg, rgba(255, 247, 231, 0.04), rgba(255, 255, 255, 0.012)),
+    rgba(0, 0, 0, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 
 .factLabel {
@@ -159,7 +201,7 @@
 
 .factValue {
   margin: 0.24rem 0 0;
-  color: var(--text);
+  color: rgba(255, 247, 231, 0.95);
   font-size: 0.8rem;
   line-height: 1.45;
 }

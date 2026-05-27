@@ -3,47 +3,71 @@
 }
 
 .panel {
+  --panel-rgb: 255, 193, 90;
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(255, 193, 90, 0.2);
+  border: 1px solid rgba(255, 240, 216, 0.11);
+  border-radius: 1.1rem;
   background:
-    radial-gradient(circle at 0% 0%, rgba(255, 193, 90, 0.08), transparent 38%),
-    rgba(8, 10, 14, 0.9);
+    linear-gradient(180deg, rgba(255, 247, 231, 0.035), rgba(255, 255, 255, 0.012)),
+    rgba(0, 0, 0, 0.26);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 24px 70px rgba(0, 0, 0, 0.34);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 16px 34px rgba(0, 0, 0, 0.18);
 }
 
 .panelSelected {
-  border-color: rgba(255, 193, 90, 0.56);
+  border-color: rgba(var(--panel-rgb), 0.42);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(var(--panel-rgb), 0.16), transparent 38%),
+    linear-gradient(90deg, rgba(var(--panel-rgb), 0.11), transparent 64%),
+    rgba(7, 9, 13, 0.82);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 0 0 1px rgba(255, 193, 90, 0.12),
+    0 0 0 1px rgba(var(--panel-rgb), 0.1),
     0 18px 58px rgba(0, 0, 0, 0.36),
-    0 0 24px rgba(255, 193, 90, 0.1);
+    0 0 24px rgba(var(--panel-rgb), 0.1);
+}
+
+.panelSelected::before {
+  position: absolute;
+  top: 0.95rem;
+  bottom: 0.95rem;
+  left: 0;
+  width: 3px;
+  border-radius: 0 999px 999px 0;
+  background: rgba(var(--panel-rgb), 0.86);
+  box-shadow: 0 0 18px rgba(var(--panel-rgb), 0.38);
+  content: "";
 }
 
 .panelInfo {
-  border-color: rgba(139, 181, 255, 0.32);
+  --panel-rgb: 139, 181, 255;
+  border-color: rgba(139, 181, 255, 0.22);
 }
 
 .panelOk {
-  border-color: rgba(130, 236, 151, 0.32);
+  --panel-rgb: 130, 236, 151;
+  border-color: rgba(130, 236, 151, 0.22);
 }
 
 .panelWarn {
-  border-color: rgba(255, 193, 90, 0.42);
+  --panel-rgb: 255, 193, 90;
+  border-color: rgba(255, 193, 90, 0.26);
 }
 
 .panelDanger {
-  border-color: rgba(255, 106, 61, 0.46);
+  --panel-rgb: 255, 106, 61;
+  border-color: rgba(255, 106, 61, 0.34);
 }
 
 .panelMuted {
+  --panel-rgb: 245, 239, 226;
   border-color: rgba(245, 239, 226, 0.16);
 }
 
 .panelStale {
+  --panel-rgb: 169, 163, 150;
   border-color: rgba(169, 163, 150, 0.34);
 }
 
@@ -58,17 +82,17 @@
   margin: 0;
   color: var(--amber);
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
 .title {
   margin: 0.35rem 0 0;
   color: var(--text);
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-size: 1.28rem;
+  font-weight: 760;
   letter-spacing: 0;
   line-height: 1.08;
 }
@@ -77,8 +101,8 @@
   max-width: 62rem;
   margin: 0.55rem 0 0;
   color: var(--muted);
-  font-size: 0.84rem;
-  line-height: 1.55;
+  font-size: 0.82rem;
+  line-height: 1.48;
 }
 
 .statusPill {
@@ -134,13 +158,11 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border: 1px solid rgba(255, 193, 90, 0.32);
+  border: 1px solid rgba(255, 193, 90, 0.5);
   border-radius: 0.85rem;
-  padding: 0.55rem 0.9rem;
-  color: var(--text);
-  background:
-    linear-gradient(180deg, rgba(255, 193, 90, 0.16), rgba(255, 193, 90, 0.07)),
-    rgba(8, 10, 14, 0.86);
+  padding: 0.58rem 1rem;
+  color: #1b1308;
+  background: linear-gradient(180deg, rgba(255, 210, 126, 0.98), rgba(225, 151, 43, 0.94));
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.68rem;
   font-weight: 800;
@@ -155,8 +177,8 @@
 
 .actionButton:hover:not(:disabled),
 .actionButton:focus-visible:not(:disabled) {
-  border-color: rgba(255, 193, 90, 0.64);
-  box-shadow: 0 0 18px rgba(255, 193, 90, 0.12);
+  border-color: rgba(255, 220, 154, 0.78);
+  box-shadow: 0 0 18px rgba(255, 193, 90, 0.2);
   transform: translateY(-1px);
 }
 
@@ -170,7 +192,9 @@
 .actionButtonSecondary {
   color: var(--muted);
   border-color: rgba(245, 239, 226, 0.18);
-  background: rgba(245, 239, 226, 0.05);
+  background:
+    linear-gradient(180deg, rgba(255, 247, 231, 0.045), rgba(255, 255, 255, 0.012)),
+    rgba(0, 0, 0, 0.22);
 }
 
 .actionButtonDanger {
@@ -199,22 +223,23 @@
 }
 
 .modal {
-  width: min(980px, calc(100vw - 3rem));
-  max-height: min(860px, calc(100vh - 3rem));
+  width: min(1080px, calc(100vw - 3rem));
+  max-height: min(880px, calc(100vh - 3rem));
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(255, 193, 90, 0.3);
-  border-radius: 1.85rem;
+  border: 1px solid rgba(255, 193, 90, 0.32);
+  border-radius: 1.65rem;
   background:
-    radial-gradient(circle at 0% 0%, rgba(255, 193, 90, 0.09), transparent 34%),
-    rgba(7, 9, 13, 0.97);
+    radial-gradient(circle at 0% 0%, rgba(255, 193, 90, 0.1), transparent 33%),
+    linear-gradient(180deg, rgba(13, 15, 20, 0.98), rgba(6, 8, 11, 0.98));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 34px 110px rgba(0, 0, 0, 0.56);
 }
 
 .modalWide {
-  width: min(1260px, calc(100vw - 3rem));
+  width: min(1480px, calc(100vw - 18px));
+  max-height: min(1000px, calc(100vh - 10px));
 }
 
 .modalHeader {
@@ -229,6 +254,8 @@
   min-height: 0;
   overflow: auto;
   padding: 0 1.45rem 1.25rem;
+  scrollbar-color: rgba(255, 193, 90, 0.44) rgba(20, 14, 9, 0.62);
+  scrollbar-width: thin;
 }
 
 .modalFooter {

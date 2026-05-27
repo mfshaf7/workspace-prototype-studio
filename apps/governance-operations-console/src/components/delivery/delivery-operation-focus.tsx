@@ -193,7 +193,7 @@ function DeliveryBoardEntry({
   onOpenBoard: () => void;
 }) {
   return (
-    <DeliveryPanel className={styles.boardEntry} selected tone="info">
+    <DeliveryPanel className={styles.boardEntry} selected tone="warn">
       <div className={styles.boardEntryCopy}>
         <DeliverySectionHeader
           kicker="Execution Board"
