@@ -13,7 +13,7 @@ import {
   getAvailableActions,
   getChildCounts,
   getDeliveryBoardSummary,
-  getDeliveryPackages,
+  getExecutionBoardPackages,
   getPackageAuditEvents,
   getPackageById,
   getPackageDetailsById,
@@ -40,15 +40,17 @@ function cx(...classes: ClassValue[]) {
 
 export function DeliveryExecutionBoard({
   model,
+  showIntro = true,
 }: {
   model: DeliveryReadModel;
+  showIntro?: boolean;
 }) {
   const [activeView, setActiveView] = useState<ExecutionBoardView>("control-board");
   const [selectedPackageId, setSelectedPackageId] = useState(
     model.selected_delivery_package_id,
   );
 
-  const packages = useMemo(() => getDeliveryPackages(model), [model]);
+  const packages = useMemo(() => getExecutionBoardPackages(model), [model]);
   const boardSummary = getDeliveryBoardSummary(model);
   const selectedPackage =
     getPackageById(selectedPackageId, model) ?? packages[0] ?? null;
@@ -69,11 +71,20 @@ export function DeliveryExecutionBoard({
     <div className={styles.board}>
       <DeliveryPanel className={styles.mainPane} tone="info">
         <div className={styles.toolbar}>
-          <DeliverySectionHeader
-            kicker="Execution Board"
-            title="Delivery Package Control"
-            description="Select a package, inspect wider ART context, then open only the action draft or review modal required for the selected move."
-          />
+          {showIntro ? (
+            <DeliverySectionHeader
+              kicker="Execution Board"
+              title="Delivery Package Control"
+              description="Select a package, inspect wider ART context, then open only the action draft or review modal required for the selected move."
+            />
+          ) : (
+            <div>
+              <p className={styles.viewKicker}>Board View</p>
+              <p className={styles.viewSummary}>
+                Switch between package posture, ART map, and hierarchy.
+              </p>
+            </div>
+          )}
           <div
             aria-label="Execution board views"
             className={styles.tabs}

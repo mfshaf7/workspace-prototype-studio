@@ -1,0 +1,206 @@
+.shell {
+  display: grid;
+  gap: 1rem;
+  color: var(--text);
+}
+
+.hero {
+  padding: 1.15rem;
+}
+
+.heroTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.sourceStack {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.tab {
+  min-width: 0;
+  border: 1px solid rgba(245, 239, 226, 0.14);
+  border-radius: 1rem;
+  padding: 0.8rem 0.9rem;
+  color: var(--muted);
+  background: rgba(8, 10, 14, 0.78);
+  text-align: left;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.tab:hover,
+.tab:focus-visible {
+  border-color: rgba(255, 193, 90, 0.34);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.tabActive {
+  border-color: rgba(255, 193, 90, 0.56);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 193, 90, 0.12), transparent 42%),
+    rgba(17, 15, 12, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 22px rgba(255, 193, 90, 0.1);
+  color: var(--text);
+}
+
+.tabKicker {
+  margin: 0;
+  color: var(--amber);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tabTitle {
+  margin: 0.28rem 0 0;
+  overflow: hidden;
+  color: inherit;
+  font-size: 0.9rem;
+  font-weight: 750;
+  letter-spacing: 0;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabMeta {
+  margin: 0.28rem 0 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.stageLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  gap: 1rem;
+  align-items: start;
+}
+
+.boardEntry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.56fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.1rem;
+}
+
+.boardEntryCopy {
+  min-width: 0;
+}
+
+.boardEntryFacts {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.boardEntryAction {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.stagePanel,
+.contextPanel {
+  min-width: 0;
+  padding: 1rem;
+}
+
+.registerHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.contextCard {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.9rem;
+}
+
+.factRow {
+  border: 1px solid rgba(245, 239, 226, 0.1);
+  border-radius: 0.9rem;
+  padding: 0.72rem;
+  background: rgba(245, 239, 226, 0.04);
+}
+
+.factLabel {
+  margin: 0;
+  color: var(--amber);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.factValue {
+  margin: 0.24rem 0 0;
+  color: var(--text);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.emptyState {
+  border: 1px dashed rgba(245, 239, 226, 0.18);
+  border-radius: 1rem;
+  padding: 1rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 1180px) {
+  .tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stageLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .boardEntry {
+    grid-template-columns: 1fr;
+  }
+
+  .boardEntryAction {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .heroTop {
+    display: grid;
+  }
+
+  .sourceStack {
+    justify-content: flex-start;
+  }
+
+  .tabs {
+    grid-template-columns: 1fr;
+  }
+}

@@ -30,6 +30,13 @@ export type DeliveryPackagePosture =
   | "Ready"
   | "Retired";
 
+export type DeliveryWorkflowStage =
+  | "audit_only"
+  | "execution"
+  | "intake"
+  | "refinement"
+  | "work_design";
+
 export type DeliveryComponentType =
   | "Defect"
   | "Epic"
@@ -120,6 +127,7 @@ export type DeliveryPackageSummary = {
   target_pi: string | null;
   tone: DeliveryTone;
   tree_root_id: string;
+  workflow_stage: DeliveryWorkflowStage;
 };
 
 export type DeliveryArtMapLane = {
@@ -284,6 +292,54 @@ export const deliveryReadModel: DeliveryReadModel = {
   },
   packages: [
     {
+      available_actions: readOnlyActions,
+      backend_status: "new",
+      delivery_package_id: "pkg-intake-394",
+      display_name: "Client Insight Delivery Shell",
+      legacy_epic_id: 394,
+      open_child_count: 0,
+      package_posture: "Ready",
+      source_ref: "Proposal IDEA-394",
+      summary:
+        "Accepted proposal is ready to become an ART-backed Delivery Package shell.",
+      target_pi: null,
+      tone: "warn",
+      tree_root_id: "node-intake-394",
+      workflow_stage: "intake",
+    },
+    {
+      available_actions: readOnlyActions,
+      backend_status: "new",
+      delivery_package_id: "pkg-design-712",
+      display_name: "Context Admission Work Design",
+      legacy_epic_id: 712,
+      open_child_count: 0,
+      package_posture: "Ready",
+      source_ref: "OpenProject Epic #712",
+      summary:
+        "AI/operator design session is shaping the Epic, Feature, User story, and Risk tree before ART apply.",
+      target_pi: "PI-2026-03",
+      tone: "info",
+      tree_root_id: "node-design-712",
+      workflow_stage: "work_design",
+    },
+    {
+      available_actions: readOnlyActions,
+      backend_status: "ready",
+      delivery_package_id: "pkg-refinement-760",
+      display_name: "Adapter Contract Metadata Repair",
+      legacy_epic_id: 760,
+      open_child_count: 7,
+      package_posture: "Ready",
+      source_ref: "OpenProject Epic #760",
+      summary:
+        "Package tree exists, but execution metadata still needs whole-package completion before it can enter the board.",
+      target_pi: "PI-2026-03",
+      tone: "warn",
+      tree_root_id: "node-refinement-760",
+      workflow_stage: "refinement",
+    },
+    {
       available_actions: packageActions([
         {
           action_type: "start-work",
@@ -315,6 +371,7 @@ export const deliveryReadModel: DeliveryReadModel = {
       target_pi: "PI-2026-03",
       tone: "info",
       tree_root_id: "node-698",
+      workflow_stage: "execution",
     },
     {
       available_actions: packageActions([
@@ -348,6 +405,7 @@ export const deliveryReadModel: DeliveryReadModel = {
       target_pi: "PI-2026-03",
       tone: "danger",
       tree_root_id: "node-753",
+      workflow_stage: "execution",
     },
     {
       available_actions: packageActions([
@@ -372,6 +430,7 @@ export const deliveryReadModel: DeliveryReadModel = {
       target_pi: "PI-2026-02",
       tone: "warn",
       tree_root_id: "node-681",
+      workflow_stage: "execution",
     },
     {
       available_actions: packageActions([
@@ -396,6 +455,7 @@ export const deliveryReadModel: DeliveryReadModel = {
       target_pi: null,
       tone: "warn",
       tree_root_id: "node-087",
+      workflow_stage: "execution",
     },
     {
       available_actions: packageActions([
@@ -420,6 +480,7 @@ export const deliveryReadModel: DeliveryReadModel = {
       target_pi: "PI-2026-03",
       tone: "ok",
       tree_root_id: "node-714",
+      workflow_stage: "execution",
     },
     {
       available_actions: readOnlyActions,
@@ -434,6 +495,7 @@ export const deliveryReadModel: DeliveryReadModel = {
       target_pi: "PI-2026-02",
       tone: "ok",
       tree_root_id: "node-540",
+      workflow_stage: "audit_only",
     },
     {
       available_actions: readOnlyActions,
@@ -448,6 +510,7 @@ export const deliveryReadModel: DeliveryReadModel = {
       target_pi: null,
       tone: "muted",
       tree_root_id: "node-251",
+      workflow_stage: "audit_only",
     },
     {
       available_actions: packageActions([
@@ -472,6 +535,7 @@ export const deliveryReadModel: DeliveryReadModel = {
       target_pi: "PI-2026-04",
       tone: "stale",
       tree_root_id: "node-900",
+      workflow_stage: "execution",
     },
   ],
   art_map: {

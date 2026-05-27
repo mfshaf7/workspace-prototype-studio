@@ -11,6 +11,7 @@ import {
   type DeliveryReadModel,
   type DeliverySelectedPackage,
   type DeliveryTone,
+  type DeliveryWorkflowStage,
 } from "./delivery-read-model";
 
 export type DeliveryActionDefinition = {
@@ -140,6 +141,32 @@ export function getDeliveryPackages(
         deliveryPostureOrder.indexOf(b.package_posture) ||
       a.legacy_epic_id - b.legacy_epic_id,
   );
+}
+
+export function getDeliveryPackagesByWorkflowStage(
+  workflowStage: DeliveryWorkflowStage,
+  model: DeliveryReadModel = deliveryReadModel,
+): DeliveryPackageSummary[] {
+  return getDeliveryPackages(model).filter(
+    (deliveryPackage) => deliveryPackage.workflow_stage === workflowStage,
+  );
+}
+
+export function getExecutionBoardPackages(
+  model: DeliveryReadModel = deliveryReadModel,
+): DeliveryPackageSummary[] {
+  return getDeliveryPackages(model).filter(
+    (deliveryPackage) =>
+      deliveryPackage.workflow_stage === "execution" ||
+      deliveryPackage.workflow_stage === "audit_only",
+  );
+}
+
+export function getDeliveryWorkflowStageCount(
+  workflowStage: DeliveryWorkflowStage,
+  model: DeliveryReadModel = deliveryReadModel,
+): number {
+  return getDeliveryPackagesByWorkflowStage(workflowStage, model).length;
 }
 
 export function getPackageById(

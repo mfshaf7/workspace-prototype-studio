@@ -11,3 +11,4 @@ export {
 } from "./delivery-patterns";
 
 export { DeliveryExecutionBoard } from "./delivery-execution-board";
+export { DeliveryOperationFocus } from "./delivery-operation-focus";
