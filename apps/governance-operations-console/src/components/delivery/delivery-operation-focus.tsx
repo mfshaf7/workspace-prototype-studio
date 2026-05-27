@@ -18,6 +18,7 @@ import {
 
 import {
   DeliveryActionButton,
+  DeliveryAdvisorPanel,
   DeliveryModalShell,
   DeliveryPanel,
   DeliveryRegisterTable,
@@ -46,6 +47,21 @@ type DeliverySurfaceConfig = {
 type DeliveryOperationPath = {
   label?: string;
 };
+
+type DeliveryStageWorkflowRoute =
+  | "blocker"
+  | "deferral"
+  | "intake"
+  | "refinement"
+  | "work-design";
+
+type DeliveryStageWorkflowState = {
+  deliveryPackage: DeliveryPackageSummary;
+  route: DeliveryStageWorkflowRoute;
+  surface: DeliverySurfaceConfig;
+};
+
+type DeliveryStageWorkflowStep = "draft" | "receipt" | "review";
 
 const deliverySurfaces: DeliverySurfaceConfig[] = [
   {
@@ -304,6 +320,8 @@ function DeliveryStageSurface({
   surface: DeliverySurfaceConfig;
 }) {
   const [registerOpen, setRegisterOpen] = useState(false);
+  const [stageWorkflow, setStageWorkflow] =
+    useState<DeliveryStageWorkflowState | null>(null);
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const packages = surface.stage
     ? getDeliveryPackagesByWorkflowStage(surface.stage, model)
@@ -316,8 +334,11 @@ function DeliveryStageSurface({
     packages[0] ??
     null;
   const rows = packages.map((deliveryPackage, index) =>
-    packageRegisterRow(deliveryPackage, index, surface, setSelectedPackageId),
+    packageRegisterRow(deliveryPackage, index, setSelectedPackageId),
   );
+  const workflowAction = selectedPackage
+    ? stageWorkflowAction(surface, selectedPackage)
+    : null;
 
   return (
     <>
@@ -448,20 +469,277 @@ function DeliveryStageSurface({
                     label="Next Surface"
                     value={nextSurfaceHint(selectedPackage.workflow_stage)}
                   />
+                  {workflowAction ? (
+                    <div className={styles.contextActionCard}>
+                      <DeliverySectionHeader
+                        actions={
+                          <DeliveryStatusPill tone={workflowAction.tone}>
+                            {workflowAction.statusLabel}
+                          </DeliveryStatusPill>
+                        }
+                        kicker="Required Action"
+                        title={workflowAction.title}
+                        description={workflowAction.description}
+                      />
+                      <div className={styles.contextActionFooter}>
+                        <DeliveryActionButton
+                          onClick={() =>
+                            setStageWorkflow({
+                              deliveryPackage: selectedPackage,
+                              route: workflowAction.route,
+                              surface,
+                            })
+                          }
+                          tone={workflowAction.tone}
+                          variant={
+                            workflowAction.tone === "danger"
+                              ? "danger"
+                              : "primary"
+                          }
+                        >
+                          {workflowAction.buttonLabel}
+                        </DeliveryActionButton>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
             </DeliveryPanel>
           </div>
         </DeliveryModalShell>
       ) : null}
+
+      {stageWorkflow ? (
+        <DeliveryStageWorkflowModal
+          model={model}
+          onClose={() => setStageWorkflow(null)}
+          workflow={stageWorkflow}
+        />
+      ) : null}
     </>
+  );
+}
+
+function DeliveryStageWorkflowModal({
+  model,
+  onClose,
+  workflow,
+}: {
+  model: DeliveryReadModel;
+  onClose: () => void;
+  workflow: DeliveryStageWorkflowState;
+}) {
+  const [step, setStep] = useState<DeliveryStageWorkflowStep>("draft");
+  const [operatorNote, setOperatorNote] = useState(
+    initialOperatorNote(workflow),
+  );
+  const copy = stageWorkflowCopy(workflow);
+  const gates = stageWorkflowGates(workflow, operatorNote);
+  const openGateCount = gates.filter((gate) => gate.tone === "warn").length;
+  const readyForReview = openGateCount === 0;
+  const receiptReady = step === "receipt";
+
+  return (
+    <DeliveryModalShell
+      description={copy.description}
+      footer={
+        <>
+          <DeliveryActionButton onClick={onClose} variant="secondary">
+            Back To Register
+          </DeliveryActionButton>
+          {step === "draft" ? (
+            <DeliveryActionButton
+              disabled={!readyForReview}
+              onClick={() => setStep("review")}
+              tone={copy.tone}
+            >
+              Review Apply
+            </DeliveryActionButton>
+          ) : step === "review" ? (
+            <>
+              <DeliveryActionButton
+                onClick={() => setStep("draft")}
+                variant="secondary"
+              >
+                Back To Draft
+              </DeliveryActionButton>
+              <DeliveryActionButton
+                onClick={() => setStep("receipt")}
+                tone={copy.tone}
+              >
+                Apply
+              </DeliveryActionButton>
+            </>
+          ) : (
+            <DeliveryActionButton onClick={onClose} tone="ok">
+              Done
+            </DeliveryActionButton>
+          )}
+        </>
+      }
+      kicker={copy.kicker}
+      onClose={onClose}
+      size="wide"
+      title={copy.title}
+    >
+      <div className={styles.workflowModalGrid}>
+        <div className={styles.workflowMainColumn}>
+          <DeliveryPanel
+            className={styles.workflowProgressPanel}
+            selected
+            tone={copy.tone}
+          >
+            <DeliverySectionHeader
+              actions={
+                <DeliveryStatusPill tone={receiptReady ? "ok" : copy.tone}>
+                  {receiptReady ? "applied" : copy.statusLabel}
+                </DeliveryStatusPill>
+              }
+              kicker="Workflow Progress"
+              title={copy.progressTitle}
+              description={copy.progressDescription}
+            />
+            <div className={styles.workflowStepGrid}>
+              {copy.steps.map((item) => {
+                const active = item.id === step;
+                const complete =
+                  step === "receipt" ||
+                  (step === "review" && item.id === "draft");
+                return (
+                  <button
+                    aria-pressed={active}
+                    className={`${styles.workflowStepCard} ${
+                      active ? styles.workflowStepCardActive : ""
+                    }`}
+                    key={item.id}
+                    onClick={() => {
+                      if (item.id === "draft" || readyForReview) {
+                        setStep(item.id);
+                      }
+                    }}
+                    type="button"
+                  >
+                    <span>{item.label}</span>
+                    <DeliveryStatusPill tone={complete ? "ok" : active ? copy.tone : "muted"}>
+                      {complete ? "ready" : active ? "current" : "next"}
+                    </DeliveryStatusPill>
+                  </button>
+                );
+              })}
+            </div>
+          </DeliveryPanel>
+
+          <DeliveryPanel className={styles.workflowDraftPanel} tone={copy.tone}>
+            <DeliverySectionHeader
+              actions={
+                <DeliveryStatusPill tone={workflow.deliveryPackage.tone}>
+                  {workflow.deliveryPackage.package_posture}
+                </DeliveryStatusPill>
+              }
+              kicker={copy.draftKicker}
+              title={workflow.deliveryPackage.display_name}
+              description={copy.draftDescription}
+            />
+
+            {step === "receipt" ? (
+              <div className={styles.workflowReceiptLog}>
+                {copy.receiptLines.map((line) => (
+                  <div className={styles.workflowReceiptLine} key={line}>
+                    <span>[ok]</span>
+                    <p>{line}</p>
+                  </div>
+                ))}
+              </div>
+            ) : step === "review" ? (
+              <div className={styles.workflowReviewList}>
+                {stageWorkflowReviewRows(workflow, operatorNote).map((row) => (
+                  <FactRow key={row[0]} label={row[0]} value={row[1]} />
+                ))}
+              </div>
+            ) : (
+              <div className={styles.workflowDraftBody}>
+                <div className={styles.workflowDraftFacts}>
+                  <FactRow label="Source" value={workflow.deliveryPackage.source_ref} />
+                  <FactRow
+                    label="Target PI"
+                    value={workflow.deliveryPackage.target_pi ?? "Not committed"}
+                  />
+                  <FactRow
+                    label="Open Children"
+                    value={String(workflow.deliveryPackage.open_child_count)}
+                  />
+                  <FactRow
+                    label="Apply Route"
+                    value={copy.applyRoute}
+                  />
+                </div>
+                <label className={styles.workflowNoteField}>
+                  <span>Operator Note</span>
+                  <textarea
+                    onChange={(event) => setOperatorNote(event.target.value)}
+                    placeholder={copy.notePlaceholder}
+                    value={operatorNote}
+                  />
+                </label>
+              </div>
+            )}
+          </DeliveryPanel>
+        </div>
+
+        <div className={styles.workflowSideColumn}>
+          <DeliveryPanel className={styles.workflowGatePanel} tone={openGateCount ? "warn" : "ok"}>
+            <DeliverySectionHeader
+              actions={
+                <DeliveryStatusPill tone={openGateCount ? "warn" : "ok"}>
+                  {openGateCount ? `${openGateCount} open` : "ready"}
+                </DeliveryStatusPill>
+              }
+              kicker="Readiness Gates"
+              title={openGateCount ? "Operator Input Required" : "Ready For Apply Review"}
+              description={copy.gateDescription}
+            />
+            <div className={styles.workflowGateList}>
+              {gates.map((gate) => (
+                <div className={styles.workflowGateRow} key={gate.label}>
+                  <div>
+                    <p>{gate.label}</p>
+                    <span>{gate.detail}</span>
+                  </div>
+                  <DeliveryStatusPill tone={gate.tone}>
+                    {gate.status}
+                  </DeliveryStatusPill>
+                </div>
+              ))}
+            </div>
+          </DeliveryPanel>
+
+          <DeliveryAdvisorPanel
+            profileLabel={copy.advisorProfile}
+            statusLabel="online"
+            transcript={[
+              {
+                id: "advisor-1",
+                role: "advisor",
+                text: copy.advisorText,
+              },
+              {
+                id: "operator-1",
+                role: "operator",
+                text: operatorNote.trim()
+                  ? operatorNote.trim()
+                  : "Operator note is empty.",
+              },
+            ]}
+          />
+        </div>
+      </div>
+    </DeliveryModalShell>
   );
 }
 
 function packageRegisterRow(
   deliveryPackage: DeliveryPackageSummary,
   index: number,
-  surface: DeliverySurfaceConfig,
   onSelectPackage: (deliveryPackageId: string) => void,
 ): DeliveryRegisterRow {
   return {
@@ -474,6 +752,325 @@ function packageRegisterRow(
     statusTone: deliveryPackage.tone,
     title: deliveryPackage.display_name,
   };
+}
+
+function stageWorkflowAction(
+  surface: DeliverySurfaceConfig,
+  deliveryPackage: DeliveryPackageSummary,
+): {
+  buttonLabel: string;
+  description: string;
+  route: DeliveryStageWorkflowRoute;
+  statusLabel: string;
+  title: string;
+  tone: DeliveryTone;
+} {
+  if (deliveryPackage.package_posture === "Blocked") {
+    return {
+      buttonLabel: "Open Blocker",
+      description:
+        "Route this selected package through the blocker workflow before normal stage work continues.",
+      route: "blocker",
+      statusLabel: "blocked",
+      title: "Resolve Or Disposition Blocker",
+      tone: "danger",
+    };
+  }
+
+  if (deliveryPackage.package_posture === "Deferred") {
+    return {
+      buttonLabel: "Review Deferral",
+      description:
+        "Inspect the parked reason, review point, and resume decision before changing the package posture.",
+      route: "deferral",
+      statusLabel: "deferred",
+      title: "Review Deferred Work",
+      tone: "muted",
+    };
+  }
+
+  if (surface.id === "intake") {
+    return {
+      buttonLabel: "Open Intake",
+      description:
+        "Consume the accepted proposal into the Delivery shell and produce an apply receipt.",
+      route: "intake",
+      statusLabel: "ready",
+      title: "Run Intake Workflow",
+      tone: "warn",
+    };
+  }
+
+  if (surface.id === "work-design") {
+    return {
+      buttonLabel: "Open Work Design",
+      description:
+        "Open the AI/operator work design flow to shape the package tree before refinement.",
+      route: "work-design",
+      statusLabel: "ready",
+      title: "Run Work Design Workflow",
+      tone: "info",
+    };
+  }
+
+  return {
+    buttonLabel: "Open Refinement",
+    description:
+      "Complete whole-package metadata and review the apply command before the package can enter execution control.",
+    route: "refinement",
+    statusLabel: "ready",
+    title: "Run Refinement Workflow",
+    tone: "warn",
+  };
+}
+
+function initialOperatorNote(workflow: DeliveryStageWorkflowState) {
+  switch (workflow.route) {
+    case "blocker":
+      return "Blocker needs operator disposition before this package can continue.";
+    case "deferral":
+      return "Deferred package should stay parked until the review point is reached.";
+    case "intake":
+      return "Accepted source is ready for Delivery shell intake.";
+    case "work-design":
+      return "Shape the Epic, Feature, User story, and optional Risk tree before refinement.";
+    case "refinement":
+      return "Complete the package metadata contract before execution board entry.";
+  }
+}
+
+function stageWorkflowCopy(workflow: DeliveryStageWorkflowState): {
+  advisorProfile: string;
+  advisorText: string;
+  applyRoute: string;
+  description: string;
+  draftDescription: string;
+  draftKicker: string;
+  gateDescription: string;
+  kicker: string;
+  notePlaceholder: string;
+  progressDescription: string;
+  progressTitle: string;
+  receiptLines: string[];
+  statusLabel: string;
+  steps: Array<{ id: DeliveryStageWorkflowStep; label: string }>;
+  title: string;
+  tone: DeliveryTone;
+} {
+  const baseSteps: Array<{ id: DeliveryStageWorkflowStep; label: string }> = [
+    { id: "draft", label: "Draft" },
+    { id: "review", label: "Review" },
+    { id: "receipt", label: "Receipt" },
+  ];
+  const packageName = workflow.deliveryPackage.display_name;
+
+  switch (workflow.route) {
+    case "blocker":
+      return {
+        advisorProfile: "Delivery Blocker Advisor",
+        advisorText:
+          "I will preserve the blocker signal, ask for an operator disposition, and avoid moving this package until the disposition is explicit.",
+        applyRoute: "oos://delivery/blocker",
+        description:
+          "Record the blocker disposition, owner, and review point before the package can return to its normal stage workflow.",
+        draftDescription:
+          "Use the draft to capture the blocker decision that the apply review will send through OOS.",
+        draftKicker: "Blocker Draft",
+        gateDescription:
+          "A blocker workflow must include a reason and a visible next review point.",
+        kicker: "Blocker Workflow",
+        notePlaceholder:
+          "State the blocker, owner, disposition, and review point.",
+        progressDescription:
+          "Draft, review, apply, and receipt stay in one guarded blocker flow.",
+        progressTitle: "Blocker Disposition",
+        receiptLines: [
+          "Console submitted blocker disposition to OOS.",
+          "WGCF readiness gate kept the blocker visible in the receipt.",
+          "OpenProject adapter accepted the blocker update for preview.",
+        ],
+        statusLabel: "blocked",
+        steps: baseSteps,
+        title: packageName,
+        tone: "danger",
+      };
+    case "deferral":
+      return {
+        advisorProfile: "Delivery Deferral Advisor",
+        advisorText:
+          "I will keep the work parked unless the operator records a resume path and review reason.",
+        applyRoute: "oos://delivery/defer",
+        description:
+          "Review the parked state and decide whether the package remains deferred or should return to active workflow.",
+        draftDescription:
+          "Use the draft to record the deferral reason and review checkpoint.",
+        draftKicker: "Deferral Draft",
+        gateDescription:
+          "Deferred work needs an operator note so the parked state is not ambiguous.",
+        kicker: "Deferral Review",
+        notePlaceholder:
+          "State why this remains deferred, or what must change before it resumes.",
+        progressDescription:
+          "Draft, review, apply, and receipt stay in one guarded deferral flow.",
+        progressTitle: "Deferral Decision",
+        receiptLines: [
+          "Console submitted deferral review to OOS.",
+          "WGCF receipt preserved the parked rationale.",
+          "OpenProject adapter accepted the defer update for preview.",
+        ],
+        statusLabel: "deferred",
+        steps: baseSteps,
+        title: packageName,
+        tone: "muted",
+      };
+    case "intake":
+      return {
+        advisorProfile: "Delivery Intake Advisor",
+        advisorText:
+          "I will check the accepted source, preserve the proposal reference, and prepare the Delivery shell intake apply.",
+        applyRoute: "oos://delivery/intake",
+        description:
+          "Consume the accepted source into an ART-backed Delivery Package shell through the guarded apply path.",
+        draftDescription:
+          "Use the draft to confirm source binding, package shell, and handoff target.",
+        draftKicker: "Intake Draft",
+        gateDescription:
+          "Intake needs source binding, shell identity, and an operator note before apply review.",
+        kicker: "Intake Workflow",
+        notePlaceholder:
+          "Confirm source proposal, Delivery shell, owner boundary, and next handoff.",
+        progressDescription:
+          "Draft, review, apply, and receipt stay in one guarded intake flow.",
+        progressTitle: "Delivery Shell Intake",
+        receiptLines: [
+          "Console submitted intake apply request to OOS.",
+          "WGCF readiness gate accepted the source and shell binding.",
+          "OpenProject adapter accepted the Delivery shell update for preview.",
+        ],
+        statusLabel: "ready",
+        steps: baseSteps,
+        title: packageName,
+        tone: "warn",
+      };
+    case "work-design":
+      return {
+        advisorProfile: "Work Design Advisor",
+        advisorText:
+          "I will keep planning inside the draft session, help shape the tree, and avoid setting execution-only metadata here.",
+        applyRoute: "oos://delivery/work-design",
+        description:
+          "Open the AI/operator design flow that shapes the package tree before refinement.",
+        draftDescription:
+          "Use the draft to confirm tree shape, child groups, support branches, and handoff readiness.",
+        draftKicker: "Work Design Draft",
+        gateDescription:
+          "Work Design needs tree shape, child grouping, and handoff note before apply review.",
+        kicker: "Work Design Workflow",
+        notePlaceholder:
+          "Summarize the tree shape, missing children, support branches, and handoff to refinement.",
+        progressDescription:
+          "Draft, review, apply, and receipt stay in one guarded work design flow.",
+        progressTitle: "Package Tree Design",
+        receiptLines: [
+          "Console submitted work design result to OOS.",
+          "WGCF validation preserved the designed tree reference.",
+          "OpenProject adapter accepted the draft handoff update for preview.",
+        ],
+        statusLabel: "ready",
+        steps: baseSteps,
+        title: packageName,
+        tone: "info",
+      };
+    case "refinement":
+      return {
+        advisorProfile: "Refinement Advisor",
+        advisorText:
+          "I will inspect whole-package metadata, highlight missing contract fields, and keep the operator as the apply authority.",
+        applyRoute: "oos://delivery/refinement",
+        description:
+          "Complete whole-package metadata so OOS/OpenProject can accept clean execution-ready state.",
+        draftDescription:
+          "Use the draft to confirm Epic contract, child metadata, readiness gates, and apply intent.",
+        draftKicker: "Refinement Draft",
+        gateDescription:
+          "Refinement needs whole-package metadata, child work classification, and operator note before apply review.",
+        kicker: "Refinement Workflow",
+        notePlaceholder:
+          "Summarize metadata gaps fixed, remaining deferrals, child work classification, and apply intent.",
+        progressDescription:
+          "Draft, review, apply, and receipt stay in one guarded refinement flow.",
+        progressTitle: "Execution-Ready Refinement",
+        receiptLines: [
+          "Console submitted refinement apply request to OOS.",
+          "WGCF readiness gate validated metadata completeness.",
+          "OpenProject adapter accepted the refinement update for preview.",
+        ],
+        statusLabel: "ready",
+        steps: baseSteps,
+        title: packageName,
+        tone: "warn",
+      };
+  }
+}
+
+function stageWorkflowGates(
+  workflow: DeliveryStageWorkflowState,
+  operatorNote: string,
+): Array<{
+  detail: string;
+  label: string;
+  status: string;
+  tone: DeliveryTone;
+}> {
+  const hasNote = operatorNote.trim().length > 12;
+  const sourceReady = Boolean(workflow.deliveryPackage.source_ref);
+  const targetReady =
+    workflow.route === "intake" ||
+    workflow.route === "deferral" ||
+    workflow.route === "blocker" ||
+    Boolean(workflow.deliveryPackage.target_pi);
+
+  return [
+    {
+      detail: sourceReady
+        ? workflow.deliveryPackage.source_ref
+        : "Source binding is missing.",
+      label: "Source Binding",
+      status: sourceReady ? "ready" : "open",
+      tone: sourceReady ? "ok" : "warn",
+    },
+    {
+      detail: targetReady
+        ? workflow.deliveryPackage.target_pi ?? "Stage does not require Target PI."
+        : "Target PI must be set before this apply route.",
+      label: "Stage Target",
+      status: targetReady ? "ready" : "open",
+      tone: targetReady ? "ok" : "warn",
+    },
+    {
+      detail: hasNote
+        ? "Operator rationale is present."
+        : "Add a concise operator rationale before apply review.",
+      label: "Operator Rationale",
+      status: hasNote ? "ready" : "open",
+      tone: hasNote ? "ok" : "warn",
+    },
+  ];
+}
+
+function stageWorkflowReviewRows(
+  workflow: DeliveryStageWorkflowState,
+  operatorNote: string,
+): Array<[string, string]> {
+  const copy = stageWorkflowCopy(workflow);
+  return [
+    ["Package", workflow.deliveryPackage.display_name],
+    ["Source", workflow.deliveryPackage.source_ref],
+    ["Stage", stageLabel(workflow.deliveryPackage.workflow_stage)],
+    ["Action", copy.title],
+    ["Apply Route", copy.applyRoute],
+    ["Operator Note", operatorNote.trim() || "No operator note recorded"],
+  ];
 }
 
 function deskTabToneClass(tone: DeliveryTone) {
