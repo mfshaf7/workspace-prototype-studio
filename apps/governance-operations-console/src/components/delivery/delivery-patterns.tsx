@@ -6,6 +6,7 @@ import type {
   ReactNode,
   TableHTMLAttributes,
 } from "react";
+import { createPortal } from "react-dom";
 
 import type {
   DeliveryComponentType,
@@ -165,7 +166,7 @@ export function DeliveryModalShell({
   size?: "standard" | "wide";
   title: ReactNode;
 }) {
-  return (
+  const modal = (
     <>
       <div className={styles.modalBackdrop} aria-hidden="true" />
       <div className={styles.modalLayer}>
@@ -197,6 +198,12 @@ export function DeliveryModalShell({
       </div>
     </>
   );
+
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(modal, document.body);
 }
 
 export function DeliveryAdvisorPanel({

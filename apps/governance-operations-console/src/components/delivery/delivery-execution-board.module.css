@@ -309,6 +309,41 @@
   gap: 0.55rem;
 }
 
+.modalStack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.modalGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.actionDraftPanel {
+  padding: 1rem;
+}
+
+.gateList {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.gateRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid rgba(245, 239, 226, 0.1);
+  border-radius: 0.9rem;
+  padding: 0.68rem;
+  background: rgba(245, 239, 226, 0.04);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .actionRow,
 .auditRow,
 .factRow {
@@ -341,5 +376,9 @@
   .summaryGrid,
   .controlColumns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .modalGrid {
+    grid-template-columns: 1fr;
   }
 }

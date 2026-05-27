@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import type {
   DeliveryArtNode,
+  DeliveryAvailableAction,
   DeliveryPackagePosture,
   DeliveryPackageSummary,
   DeliveryReadModel,
@@ -23,6 +24,7 @@ import { deliveryPostureTerms } from "@/data/delivery-terms";
 
 import {
   DeliveryActionButton,
+  DeliveryModalShell,
   DeliveryPanel,
   DeliverySectionHeader,
   DeliveryStatusPill,
@@ -49,6 +51,10 @@ export function DeliveryExecutionBoard({
   const [selectedPackageId, setSelectedPackageId] = useState(
     model.selected_delivery_package_id,
   );
+  const [activeAction, setActiveAction] =
+    useState<DeliveryAvailableAction | null>(null);
+  const [actionStage, setActionStage] =
+    useState<"apply" | "draft" | "receipt">("draft");
 
   const packages = useMemo(() => getExecutionBoardPackages(model), [model]);
   const boardSummary = getDeliveryBoardSummary(model);
@@ -166,6 +172,10 @@ export function DeliveryExecutionBoard({
             <SelectedPackagePanel
               auditEvents={selectedAuditEvents}
               details={selectedDetails}
+              onActionSelect={(action) => {
+                setActiveAction(action);
+                setActionStage("draft");
+              }}
               packageSummary={selectedPackage}
               packageTree={selectedTree}
               selectedActions={selectedActions}
@@ -178,6 +188,20 @@ export function DeliveryExecutionBoard({
           )}
         </DeliveryPanel>
       </div>
+
+      {selectedPackage && activeAction ? (
+        <PackageActionModal
+          action={activeAction}
+          actionStage={actionStage}
+          auditEvents={selectedAuditEvents}
+          details={selectedDetails}
+          model={model}
+          onClose={() => setActiveAction(null)}
+          onStageChange={setActionStage}
+          packageSummary={selectedPackage}
+          packageTree={selectedTree}
+        />
+      ) : null}
     </div>
   );
 }
@@ -389,12 +413,14 @@ function TreeNode({
 function SelectedPackagePanel({
   auditEvents,
   details,
+  onActionSelect,
   packageSummary,
   packageTree,
   selectedActions,
 }: {
   auditEvents: ReturnType<typeof getPackageAuditEvents>;
   details: ReturnType<typeof getPackageDetailsById>;
+  onActionSelect: (action: DeliveryAvailableAction) => void;
   packageSummary: DeliveryPackageSummary;
   packageTree: DeliveryArtNode | null;
   selectedActions: ReturnType<typeof getAvailableActions>;
@@ -445,6 +471,7 @@ function SelectedPackagePanel({
               {action.enabled ? (
                 <DeliveryActionButton
                   aria-label={`${action.label} for ${packageSummary.display_name}`}
+                  onClick={() => onActionSelect(action)}
                   variant={action.tone === "danger" ? "danger" : "primary"}
                 >
                   {action.label}
@@ -478,6 +505,197 @@ function SelectedPackagePanel({
         )}
       </section>
     </>
+  );
+}
+
+function PackageActionModal({
+  action,
+  actionStage,
+  auditEvents,
+  details,
+  model,
+  onClose,
+  onStageChange,
+  packageSummary,
+  packageTree,
+}: {
+  action: DeliveryAvailableAction;
+  actionStage: "apply" | "draft" | "receipt";
+  auditEvents: ReturnType<typeof getPackageAuditEvents>;
+  details: ReturnType<typeof getPackageDetailsById>;
+  model: DeliveryReadModel;
+  onClose: () => void;
+  onStageChange: (stage: "apply" | "draft" | "receipt") => void;
+  packageSummary: DeliveryPackageSummary;
+  packageTree: DeliveryArtNode | null;
+}) {
+  const applyIntent =
+    model.apply_intents.find(
+      (intent) => intent.action_type === action.action_type,
+    ) ?? null;
+  const childCounts = packageTree ? getChildCounts(packageTree) : null;
+  const mutableAction = Boolean(action.expected_backend_route);
+
+  if (action.action_type === "open-audit-trail") {
+    return (
+      <DeliveryModalShell
+        description={`Read-only package-scoped history for ${packageSummary.source_ref}.`}
+        footer={<DeliveryActionButton onClick={onClose}>Close</DeliveryActionButton>}
+        kicker="Audit Trail"
+        onClose={onClose}
+        title={packageSummary.display_name}
+      >
+        <div className={styles.modalStack}>
+          {auditEvents.length > 0 ? (
+            auditEvents.map((event) => (
+              <div className={styles.auditRow} key={event.event_id}>
+                <div className={styles.selectedHeader}>
+                  <p className={styles.rowTitle}>{event.title}</p>
+                  <DeliveryStatusPill tone={event.tone}>
+                    {event.category}
+                  </DeliveryStatusPill>
+                </div>
+                <p className={styles.rowDetail}>{event.detail}</p>
+                <p className={styles.rowDetail}>
+                  {event.occurred_at} / {event.receipt_id ?? "no receipt"}
+                </p>
+              </div>
+            ))
+          ) : (
+            <div className={styles.emptyState}>
+              No package-scoped audit events are projected for this package yet.
+            </div>
+          )}
+        </div>
+      </DeliveryModalShell>
+    );
+  }
+
+  if (action.action_type === "open-details") {
+    return (
+      <DeliveryModalShell
+        description="Read-only package context, lineage, and projected child shape."
+        footer={<DeliveryActionButton onClick={onClose}>Close</DeliveryActionButton>}
+        kicker="Package Details"
+        onClose={onClose}
+        title={packageSummary.display_name}
+      >
+        <div className={styles.modalGrid}>
+          <FactRow label="Source" value={packageSummary.source_ref} />
+          <FactRow label="Target PI" value={packageSummary.target_pi ?? "Not committed"} />
+          <FactRow label="Owner Repo" value={details?.owner_repo ?? "Unavailable"} />
+          <FactRow
+            label="Open Children"
+            value={String(childCounts?.open_child_count ?? packageSummary.open_child_count)}
+          />
+          <FactRow
+            label="Architecture Anchor"
+            value={details?.lineage_refs.architecture_anchor_ref ?? "Not projected"}
+          />
+          <FactRow
+            label="Required Upstream"
+            value={details?.lineage_refs.required_upstream_ref ?? "Not projected"}
+          />
+        </div>
+      </DeliveryModalShell>
+    );
+  }
+
+  return (
+    <DeliveryModalShell
+      description={`${action.label} opens as an OOS-shaped package action draft before apply. No direct OpenProject mutation happens from this button.`}
+      footer={
+        <>
+          <DeliveryActionButton onClick={onClose} variant="secondary">
+            Close
+          </DeliveryActionButton>
+          {actionStage === "draft" && mutableAction ? (
+            <DeliveryActionButton onClick={() => onStageChange("apply")}>
+              Review Apply
+            </DeliveryActionButton>
+          ) : null}
+          {actionStage === "apply" ? (
+            <DeliveryActionButton onClick={() => onStageChange("receipt")}>
+              Record Mock Receipt
+            </DeliveryActionButton>
+          ) : null}
+        </>
+      }
+      kicker="Package Action"
+      onClose={onClose}
+      title={action.label}
+    >
+      {actionStage === "draft" ? (
+        <div className={styles.modalStack}>
+          <DeliveryPanel className={styles.actionDraftPanel} tone={action.tone}>
+            <DeliverySectionHeader
+              kicker="Action Draft"
+              title={action.label}
+              description={action.reason}
+            />
+            <div className={styles.modalGrid}>
+              <FactRow label="Package" value={`${packageSummary.source_ref} / ${packageSummary.display_name}`} />
+              <FactRow label="Scope" value={action.scope.replaceAll("_", " ")} />
+              <FactRow label="Route" value={action.expected_backend_route ?? "Read-only inspection"} />
+              <FactRow
+                label="Target"
+                value={applyIntent?.target_display_name ?? "Target selection required in a deeper action draft."}
+              />
+            </div>
+          </DeliveryPanel>
+        </div>
+      ) : null}
+
+      {actionStage === "apply" ? (
+        <div className={styles.modalStack}>
+          <DeliveryPanel className={styles.actionDraftPanel} tone="warn">
+            <DeliverySectionHeader
+              kicker="Apply Review"
+              title="Confirm Prepared Change"
+              description="This mock review shows the intended target, route, and gate checks before a receipt is created."
+            />
+            <div className={styles.modalGrid}>
+              <FactRow label="Target" value={applyIntent?.target_display_name ?? packageSummary.display_name} />
+              <FactRow label="Backend Route" value={action.expected_backend_route ?? "Not mutable"} />
+              <FactRow label="Dirty State" value={applyIntent?.dirty_state ?? "clean"} />
+              <FactRow
+                label="Expected Result"
+                value={applyIntent?.operator_payload.target_status ?? "Operator-reviewed package action intent"}
+              />
+            </div>
+            <div className={styles.gateList}>
+              {(applyIntent?.gate_checks ?? [
+                { label: "Action target explicit", passed: true, tone: "ok" as const },
+                { label: "Source revision checked", passed: true, tone: "ok" as const },
+              ]).map((gate) => (
+                <div className={styles.gateRow} key={gate.label}>
+                  <span>{gate.label}</span>
+                  <DeliveryStatusPill tone={gate.tone}>
+                    {gate.passed ? "Clear" : "Blocked"}
+                  </DeliveryStatusPill>
+                </div>
+              ))}
+            </div>
+          </DeliveryPanel>
+        </div>
+      ) : null}
+
+      {actionStage === "receipt" ? (
+        <DeliveryPanel className={styles.actionDraftPanel} tone="ok">
+          <DeliverySectionHeader
+            kicker="Mock Receipt"
+            title="Action Intent Accepted"
+            description="The prototype recorded the apply result locally. Future OOS/WGCF wiring will replace this with a durable receipt reference."
+          />
+          <div className={styles.modalGrid}>
+            <FactRow label="Receipt Category" value="accepted" />
+            <FactRow label="Package" value={packageSummary.source_ref} />
+            <FactRow label="Action" value={action.label} />
+            <FactRow label="Projection Result" value="projection sync expected after apply" />
+          </div>
+        </DeliveryPanel>
+      ) : null}
+    </DeliveryModalShell>
   );
 }
 
