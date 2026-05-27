@@ -128,6 +128,18 @@
   align-items: start;
 }
 
+.stageRegisterLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.38fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.stageRegisterPanel {
+  min-width: 0;
+  padding: 1.05rem;
+}
+
 .boardEntry {
   position: relative;
   display: grid;
@@ -235,6 +247,10 @@
   }
 
   .stageLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .stageRegisterLayout {
     grid-template-columns: 1fr;
   }
 

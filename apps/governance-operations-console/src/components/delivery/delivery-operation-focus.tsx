@@ -17,6 +17,7 @@ import {
 } from "@/data/delivery-selectors";
 
 import {
+  DeliveryActionButton,
   DeliveryModalShell,
   DeliveryPanel,
   DeliveryRegisterTable,
@@ -89,9 +90,6 @@ export function DeliveryOperationFocus({
   const [activeSurfaceId, setActiveSurfaceId] =
     useState<DeliverySurfaceId>("execution-board");
   const [executionBoardOpen, setExecutionBoardOpen] = useState(false);
-  const [selectedStagePackageIds, setSelectedStagePackageIds] = useState<
-    Partial<Record<DeliverySurfaceId, string>>
-  >({});
 
   const activeSurface =
     deliverySurfaces.find((surface) => surface.id === activeSurfaceId) ??
@@ -192,13 +190,6 @@ export function DeliveryOperationFocus({
       ) : (
         <DeliveryStageSurface
           model={model}
-          onSelectPackage={(deliveryPackageId) =>
-            setSelectedStagePackageIds((current) => ({
-              ...current,
-              [activeSurface.id]: deliveryPackageId,
-            }))
-          }
-          selectedPackageId={selectedStagePackageIds[activeSurface.id] ?? null}
           surface={activeSurface}
         />
       )}
@@ -307,15 +298,13 @@ function DeliveryBoardEntry({
 
 function DeliveryStageSurface({
   model,
-  onSelectPackage,
-  selectedPackageId,
   surface,
 }: {
   model: DeliveryReadModel;
-  onSelectPackage: (deliveryPackageId: string) => void;
-  selectedPackageId: string | null;
   surface: DeliverySurfaceConfig;
 }) {
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const packages = surface.stage
     ? getDeliveryPackagesByWorkflowStage(surface.stage, model)
     : [];
@@ -327,64 +316,145 @@ function DeliveryStageSurface({
     packages[0] ??
     null;
   const rows = packages.map((deliveryPackage, index) =>
-    packageRegisterRow(deliveryPackage, index, surface, onSelectPackage),
+    packageRegisterRow(deliveryPackage, index, surface, setSelectedPackageId),
   );
 
   return (
-    <div className={styles.stageLayout}>
+    <>
       <section className="desk-workflow-panel desk-work-surface mt-4 rounded-3xl p-4 md:p-5">
-        <div className={styles.registerHeader}>
-          <DeliverySectionHeader
-            kicker={surface.title}
-            title={`${surface.title} Register`}
-            description={surface.description}
-          />
-          <DeliveryStatusPill tone={surface.tone}>
-            {packages.length} {packages.length === 1 ? "item" : "items"}
-          </DeliveryStatusPill>
-        </div>
-        {rows.length > 0 ? (
-          <DeliveryRegisterTable rows={rows} />
-        ) : (
-          <div className={styles.emptyState}>
-            No projected package currently belongs to this Delivery surface.
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+          <div>
+            <p className="mono desk-work-surface-kicker text-[10px] font-black uppercase tracking-[0.2em]">
+              {surface.title}
+            </p>
+            <h3 className="desk-work-surface-title mt-2 text-2xl font-semibold tracking-[-0.045em]">
+              {stageHeadline(surface)}
+            </h3>
+            <p className="desk-work-surface-description mt-2 max-w-2xl text-sm leading-6">
+              {surface.description}
+            </p>
           </div>
-        )}
+        </div>
+
+        <div className="portfolio-selected-flow delivery-stage-overview mt-4 rounded-3xl p-3">
+          {stageOverviewRows(surface, packages, selectedPackage).map((item) => (
+            <div
+              className={statusCardClass(
+                item.tone,
+                "portfolio-selected-flow-step rounded-2xl p-3",
+              )}
+              key={item.label}
+            >
+              <p className="mono text-[8px] font-black uppercase tracking-[0.16em]">
+                {item.label}
+              </p>
+              <p className="mt-2 text-xs font-semibold leading-5">{item.value}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="desk-entry-dock delivery-intake-draft-dock delivery-stage-entry-dock mt-8">
+          <button
+            className="delivery-stage-primary-action delivery-intake-primary-action intake-focus-draft-action desk-entry-card w-full rounded-[24px] p-5 text-left"
+            type="button"
+            title={`Open ${surface.title} register`}
+            onClick={() => setRegisterOpen(true)}
+          >
+            <div>
+              <div>
+                <p className="mono text-[11px] font-black uppercase tracking-[0.22em]">
+                  Register entry
+                </p>
+                <h3 className="intake-focus-draft-action-title mt-3 font-semibold tracking-[-0.06em]">
+                  Open {surface.title}
+                </h3>
+                <p className="mt-2 max-w-xl text-sm leading-6">
+                  {stageEntryCopy(surface)}
+                </p>
+              </div>
+              <div className="mt-7 flex justify-end">
+                <span className="intake-focus-draft-action-cue mono rounded-2xl px-4 py-3">
+                  View Register
+                </span>
+              </div>
+            </div>
+            <span className="intake-focus-draft-action-arrow mono" aria-hidden="true">
+              &gt;
+            </span>
+          </button>
+        </div>
       </section>
 
-      <DeliveryPanel
-        className={styles.contextPanel}
-        selected={Boolean(selectedPackage)}
-        tone={selectedPackage?.tone ?? surface.tone}
-      >
-        <DeliverySectionHeader
-          kicker="Selected Package"
-          title={selectedPackage?.display_name ?? "No package selected"}
-          description={
-            selectedPackage
-              ? selectedPackage.summary
-              : "Select a register item to inspect its current workflow context."
+      {registerOpen ? (
+        <DeliveryModalShell
+          description={surface.description}
+          footer={
+            <DeliveryActionButton onClick={() => setRegisterOpen(false)}>
+              Close
+            </DeliveryActionButton>
           }
-        />
-        {selectedPackage ? (
-          <div className={styles.contextCard}>
-            <FactRow label="Source" value={selectedPackage.source_ref} />
-            <FactRow
-              label="Target PI"
-              value={selectedPackage.target_pi ?? "Not committed"}
-            />
-            <FactRow
-              label="Workflow Stage"
-              value={stageLabel(selectedPackage.workflow_stage)}
-            />
-            <FactRow
-              label="Next Surface"
-              value={nextSurfaceHint(selectedPackage.workflow_stage)}
-            />
+          kicker={`${surface.title} Register`}
+          onClose={() => setRegisterOpen(false)}
+          size="wide"
+          title={surface.title}
+        >
+          <div className={styles.stageRegisterLayout}>
+            <DeliveryPanel className={styles.stageRegisterPanel} tone={surface.tone}>
+              <div className={styles.registerHeader}>
+                <DeliverySectionHeader
+                  kicker={surface.title}
+                  title={`${surface.title} Register`}
+                  description="Select a row to inspect the projected package context."
+                />
+                <DeliveryStatusPill tone={surface.tone}>
+                  {packages.length} {packages.length === 1 ? "item" : "items"}
+                </DeliveryStatusPill>
+              </div>
+              {rows.length > 0 ? (
+                <DeliveryRegisterTable rows={rows} />
+              ) : (
+                <div className={styles.emptyState}>
+                  No projected package currently belongs to this Delivery surface.
+                </div>
+              )}
+            </DeliveryPanel>
+
+            <DeliveryPanel
+              className={styles.contextPanel}
+              selected={Boolean(selectedPackage)}
+              tone={selectedPackage?.tone ?? surface.tone}
+            >
+              <DeliverySectionHeader
+                kicker="Selected Package"
+                title={selectedPackage?.display_name ?? "No package selected"}
+                description={
+                  selectedPackage
+                    ? selectedPackage.summary
+                    : "Select a register item to inspect its current workflow context."
+                }
+              />
+              {selectedPackage ? (
+                <div className={styles.contextCard}>
+                  <FactRow label="Source" value={selectedPackage.source_ref} />
+                  <FactRow
+                    label="Target PI"
+                    value={selectedPackage.target_pi ?? "Not committed"}
+                  />
+                  <FactRow
+                    label="Workflow Stage"
+                    value={stageLabel(selectedPackage.workflow_stage)}
+                  />
+                  <FactRow
+                    label="Next Surface"
+                    value={nextSurfaceHint(selectedPackage.workflow_stage)}
+                  />
+                </div>
+              ) : null}
+            </DeliveryPanel>
           </div>
-        ) : null}
-      </DeliveryPanel>
-    </div>
+        </DeliveryModalShell>
+      ) : null}
+    </>
   );
 }
 
@@ -448,6 +518,61 @@ function deliveryOverviewStats(
       label: "Blocked",
       tone: model.board_summary.blocked_count > 0 ? "danger" : "ok",
       value: String(model.board_summary.blocked_count),
+    },
+  ];
+}
+
+function stageHeadline(surface: DeliverySurfaceConfig) {
+  switch (surface.id) {
+    case "intake":
+      return "Open the delivery intake register.";
+    case "work-design":
+      return "Open the work design register.";
+    case "refinement":
+      return "Open the refinement register.";
+    case "execution-board":
+      return "Open the delivery control workspace.";
+  }
+}
+
+function stageEntryCopy(surface: DeliverySurfaceConfig) {
+  switch (surface.id) {
+    case "intake":
+      return "Search accepted proposal sources, inspect intake posture, and continue the handoff into Delivery.";
+    case "work-design":
+      return "Inspect packages that still need work design before they can move to refinement.";
+    case "refinement":
+      return "Inspect packages that need metadata readiness before they can enter execution control.";
+    case "execution-board":
+      return "Select packages, switch board view, inspect tree context, and open the required package action.";
+  }
+}
+
+function stageOverviewRows(
+  surface: DeliverySurfaceConfig,
+  packages: DeliveryPackageSummary[],
+  selectedPackage: DeliveryPackageSummary | null,
+): Array<{ label: string; tone: DeliveryTone; value: string }> {
+  return [
+    {
+      label: "Register",
+      tone: packages.length > 0 ? surface.tone : "muted",
+      value: `${packages.length} ${packages.length === 1 ? "item" : "items"}`,
+    },
+    {
+      label: "Selected",
+      tone: selectedPackage?.tone ?? "muted",
+      value: selectedPackage?.source_ref ?? "none",
+    },
+    {
+      label: "Stage",
+      tone: surface.tone,
+      value: surface.title,
+    },
+    {
+      label: "Projection",
+      tone: packages.length > 0 ? "ok" : "muted",
+      value: packages.length > 0 ? "ready" : "empty",
     },
   ];
 }
