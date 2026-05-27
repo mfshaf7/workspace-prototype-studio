@@ -187,8 +187,10 @@ export const deliveryReceiptTerms: Record<
 export const deliveryBannedImplementationTerms = [
   "Activate Epic",
   "Commitment",
+  "Drafting",
   "Front Control",
   "Fronts",
+  "Metadata Readiness",
   "Movement",
   "Package #",
 ] as const;
