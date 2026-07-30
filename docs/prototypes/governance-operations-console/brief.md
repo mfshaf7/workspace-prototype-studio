@@ -1,43 +1,48 @@
-# Workspace Governance Operations Console
+# Workspace Governance Operations Console Brief
+
+Status: current prototype brief.
+
+This file exists because `prototypes.yaml` requires a brief path. The detailed
+system contract lives in [`system-design.md`](system-design.md). Use this file
+only for quick orientation.
 
 ## Purpose
 
 Create the central operator face for the governed workspace system.
 
-The console is not just a Workspace Governance Control Fabric UI. It should
-eventually give operators one coherent view across Workspace Delivery ART,
-Workspace Proposals, WGCF, CGG, platform runtime state, security review state,
-and workspace-governance contracts.
-
-## Users
-
-- workspace operator
-- delivery operator
-- security reviewer
-- future client reviewer for client-safe progress views
+The console is not only a Workspace Governance Control Fabric UI. It gives the
+operator one coherent prototype surface across Workspace Proposals, Repository
+admission, Workspace Delivery ART, Prototype Studio, managed Product Portfolio,
+lifecycle-transition visibility, runtime readiness, model operations, agent
+assistance, and authority-owned waiver or accepted-risk decision visibility.
 
 ## Current Lifecycle
 
-`candidate`
+- lifecycle: `candidate`
+- visibility tier: `private-internal`
+- data mode: `real-readonly`
+- mutation boundary: `prototype-local`
+- runtime lane: `prototype-devint`
 
-## Visibility And Data
+## Read First
 
-- Visibility tier: `private-internal`
-- Data mode: `synthetic`
-- Mutation boundary: `read-only`
+- [`README.md`](README.md)
+- [`system-design.md`](system-design.md)
+- [`architecture/README.md`](architecture/README.md)
+- [`operation-workbench-contract.md`](operation-workbench-contract.md)
+- [`authority-decision-contract.md`](authority-decision-contract.md)
+- [`domain-contracts/`](domain-contracts/README.md)
+- [`surface-contracts/`](surface-contracts/README.md)
+- [`teras-contract.md`](teras-contract.md)
+- [`baseline-candidate-review.md`](baseline-candidate-review.md)
+- [`implementation-audit.md`](implementation-audit.md)
 
 ## Success Signal
 
-The first design baseline shows a useful operator dashboard without depending
-on Git as the runtime approval store.
+The prototype reaches baseline approval only when the operator workflow,
+visual system, source-of-truth boundaries, data and mutation boundaries,
+required diagrams, preview proof, and open post-baseline work are recorded and
+accepted.
 
-## First Screen Candidate
-
-The first screen is `Today`: a premium read-only operator cockpit that shows
-operator identity, inactive model readiness, workspace pulse, the next safe
-operator command, control proof, decision queue, lanes, and recent
-operator-safe signals.
-
-The visual direction is a calm premium command center, not a dense admin table.
-The screen must make it clear within seconds what is active, blocked, parked,
-healthy, and ready for operator decision.
+Baseline approval does not mean production authority, stage/prod readiness,
+security acceptance, backend mutation approval, or source graduation.

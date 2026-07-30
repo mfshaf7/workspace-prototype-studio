@@ -49,9 +49,44 @@
         },
         "mutation_boundary": {
           "enum": ["none", "read-only", "prototype-local", "external-sandbox", "real-system"]
+        },
+        "linked_records": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/linked_record" }
+        }
+      }
+    },
+    "linked_record": {
+      "type": "object",
+      "required": ["role", "ref", "system", "level", "label"],
+      "properties": {
+        "role": {
+          "enum": [
+            "proposal-source",
+            "delivery-initiative",
+            "studio-anchor",
+            "candidate-record",
+            "baseline-record",
+            "graduation-record",
+            "retirement-record"
+          ]
+        },
+        "ref": {
+          "type": "string",
+          "pattern": "^(openproject://work_packages/[0-9]+|repo://.+|record://.+)$"
+        },
+        "system": {
+          "enum": ["openproject", "repo", "prototype-studio"]
+        },
+        "level": {
+          "enum": ["proposal", "epic", "feature", "user-story", "record", "repo"]
+        },
+        "label": { "type": "string", "minLength": 1 },
+        "parent_ref": {
+          "type": "string",
+          "pattern": "^openproject://work_packages/[0-9]+$"
         }
       }
     }
   }
 }
-

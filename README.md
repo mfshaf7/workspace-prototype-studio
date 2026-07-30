@@ -16,6 +16,7 @@ Authoritative references for this repo are `workspace-governance`,
 ## What Lives Here
 
 - prototype briefs, backlog notes, change logs, and decision logs
+- prototype design profiles and pattern inventories
 - design baseline records before a UI is treated as approved
 - backend stubs and local prototype services when needed
 - mock and synthetic data fixtures
@@ -66,4 +67,6 @@ and usually graduation.
 - `retired`: no longer active; keep the decision record
 
 See [docs/operating-model.md](docs/operating-model.md) for the full operator
-workflow.
+workflow and [docs/interface-design-discipline.md](docs/interface-design-discipline.md)
+for UI design discipline. Source structure and coding rules live in
+[docs/source-structure-discipline.md](docs/source-structure-discipline.md).

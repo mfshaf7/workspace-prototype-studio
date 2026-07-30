@@ -12,7 +12,11 @@ Authoritative references for this repo are `workspace-governance`,
 1. Read `README.md`.
 2. Read `docs/operating-model.md`.
 3. Inspect `prototypes.yaml` before editing any prototype.
-4. Run `make validate` before treating changes as complete.
+4. For UI work, read the prototype design profile or create one before treating
+   the design as baseline-ready.
+5. During UI exploration, use the active design profile's focused validation
+   loop instead of rebuilding after every visual tweak. Run `make validate`
+   only before a completion, baseline, dependency, or deployment checkpoint.
 
 ## Operating Rules
 
@@ -31,7 +35,7 @@ Authoritative references for this repo are `workspace-governance`,
 - Client-visible work must use `client-review` or `public-demo` visibility only
   after a client-safe evidence path exists.
 - UI prototypes should prioritize deliberate design direction over generic
-  scaffolding.
+  scaffolding, and should use the workspace `interface-design-discipline` skill.
 - Backend stubs are allowed here only while the prototype is still incubating.
   Durable backend services must graduate to the owning product repo or a new
   repo.
