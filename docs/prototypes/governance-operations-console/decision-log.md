@@ -31,6 +31,16 @@ earlier one.
   active `repos.yaml`, `products.yaml`, or `components.yaml` record. Product
   Portfolio validates publication only for active products. This decision
   supersedes the briefly implemented standalone product-only intake surface.
+- Decision: the operator approved the Governance Operations Console local
+  design baseline on 2026-07-30. The active record is
+  `record://design-baselines/governance-operations-console-2026-07-30`, with
+  focused security review evidence in security-architecture PR #89 and
+  refreshed security evidence in PR #90.
+- Decision: baseline approval accepts the local product shape, workflows,
+  visual language, source boundaries, fixture-backed proof, and explicit
+  post-baseline owner ledger. It does not approve live backend authority,
+  authenticated identity, secrets, client data, autonomous AI action,
+  shared exposure, stage/prod deployment, or source graduation.
 
 ## 2026-07-26
 

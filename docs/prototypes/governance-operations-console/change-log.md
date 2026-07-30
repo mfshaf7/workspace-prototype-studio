@@ -19,6 +19,12 @@ lives in `surface-contracts/lifecycle-transitions.md`.
 - Replaced Portfolio Admission source, fixtures, commands, projections, tests,
   and guards with Publication over active Workspace product identity. The
   Console still performs no live Workspace Governance or Portfolio mutation.
+- Added the approved Governance Operations Console design-baseline record,
+  promoted the Prototype Studio registry lifecycle to `baseline-approved`, and
+  bound the focused merged security review.
+- Updated current lifecycle records so the approved local baseline remains
+  distinct from live integration, deployment, security acceptance, and source
+  graduation.
 
 ## 2026-07-29
 

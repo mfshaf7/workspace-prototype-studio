@@ -1,11 +1,12 @@
 # Foundation Proof
 
-Status: executable pre-baseline architecture proof.
+Status: executable approved-baseline architecture proof.
 
 Source: [`system-model.yaml`](../system-model.yaml). This view projects the
 architecture exercised by the local
 [foundation simulation](../../foundation-simulation-report.md). It is test
-evidence for the Console candidate, not live backend or production evidence.
+evidence for the approved local Console baseline, not live backend or
+production evidence.
 
 ## Executed Path
 

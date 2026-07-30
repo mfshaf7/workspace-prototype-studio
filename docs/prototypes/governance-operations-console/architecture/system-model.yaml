@@ -4,7 +4,7 @@ system:
   id: governance-operations-console
   name: Workspace Governance Operations Console
   owner_repo: workspace-prototype-studio
-  prototype_lifecycle: candidate
+  prototype_lifecycle: baseline-approved
   design_status: approved-target
   data_mode: real-readonly
   mutation_boundary: prototype-local

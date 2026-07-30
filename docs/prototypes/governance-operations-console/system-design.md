@@ -1,6 +1,6 @@
 # Governance Operations Console System Design
 
-Status: normalized system contract, not baseline-approved implementation.
+Status: approved local system and design baseline contract.
 
 This is the read-first system contract for the Governance Operations Console
 prototype. It normalizes the accepted direction from prior console discussion,
@@ -24,7 +24,7 @@ Current work home:
 
 - owner repo: `workspace-prototype-studio`
 - prototype id: `governance-operations-console`
-- lifecycle: `candidate`
+- lifecycle: `baseline-approved`
 - data mode: `real-readonly`
 - mutation boundary: `prototype-local`
 - runtime lane: `prototype-devint`
@@ -53,10 +53,11 @@ must not change the clean lifecycle used by later prototypes.
 
 Delivery, Proposal, Repository, Model Operations, Prototype, Product Portfolio,
 and Orchestration have accepted local prototype shapes inside Operation
-Workbench. Their completion does not approve the whole Console. The Console
-cannot claim baseline approval until all top-level capabilities, shared
-transitions, cross-surface behavior, evidence, and open post-baseline work have
-been assessed together.
+Workbench. The approved Console baseline also covers the top-level capabilities,
+shared transitions, cross-surface behavior, local evidence, and explicit
+post-baseline owner ledger. It does not approve live adapters, canonical
+mutation, deployment, security acceptance beyond the recorded local boundary,
+or source graduation.
 
 ## Core Idea
 

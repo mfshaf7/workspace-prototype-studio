@@ -1,9 +1,8 @@
 # Governance Operations Console Baseline Candidate Review
 
-Status: governed baseline promotion in progress. The operator accepted the
-candidate for promotion on 2026-07-30, but this record is not the durable
-baseline approval and does not authorize live integration, live mutation,
-deployment, or source graduation.
+Status: approved local baseline recorded for governed source landing. The
+operator approved the baseline on 2026-07-30. This record does not authorize
+live integration, live mutation, deployment, or source graduation.
 
 ## Prototype Identity
 
@@ -12,15 +11,16 @@ deployment, or source graduation.
 - prototype owner: Workspace Governance
 - source custodian: Workspace Prototype Studio
 - product owner: `mfshaf7`
-- lifecycle: `candidate`
+- lifecycle: `baseline-approved`
 - visibility: `private-internal`
 - data mode: `real-readonly`
 - mutation boundary: `prototype-local`
 - runtime lane: `prototype-devint`
 
-The registry intentionally retains `design_baseline_ref: null` and lifecycle
-`candidate` until the security dependency, source landing, and durable approval
-record are complete.
+The registry binds
+`record://design-baselines/governance-operations-console-2026-07-30` and the
+focused security review. Merge of the source landing makes that approved
+baseline durable on the repository mainline.
 
 ## Objective And User Need
 
@@ -126,11 +126,12 @@ The baseline landing is tracked under Delivery initiative `#417`:
 | `#767` | Parent baseline approval and landing Feature | Coordination parent |
 | `#768` | Workspace Prototype Studio source baseline | `feature_single_landing_unit` |
 | `#769` | Focused Governance Console security delta review | `child_isolated_landing_unit` |
+| `#770` | Security evidence freshness prerequisite | `child_isolated_landing_unit` |
+| `#771` | PI objective for governed baseline approval | PI objective |
 
-Source item `#768` depends on security item `#769`. The candidate source branch
-is `delivery-768-governance-console-baseline`. The security review must land
-first; baseline approval must not be inferred from the local branch or passing
-tests alone.
+Security items `#769` and `#770` are complete through merged
+security-architecture PRs `#89` and `#90`. Source item `#768` remains the final
+child landing unit on branch `delivery-768-governance-console-baseline`.
 
 ## Live Integration and Deployment Owner Ledger
 
@@ -153,20 +154,17 @@ implementation. This packet does not authorize cross-repository changes.
 No known Baseline Foundation architecture, semantic, source-structure, type,
 build, dependency-audit, or foundation-simulation defect remains.
 
-The remaining evidence gates are:
+The remaining landing gates are:
 
-1. land the focused security delta review for the accepted local-only runtime
-   boundaries;
-2. rerun exact clean-install validation from the reviewed source state;
-3. land the Workspace Prototype Studio source pull request;
-4. create and validate the durable design-baseline record, then update
-   `prototypes.yaml` and its typed baseline link;
-5. finalize the Review Packet and reconcile ART state without closing the
-   broader Delivery initiative;
-6. classify and sequence Live Integration and Deployment work separately.
+1. rerun exact clean-install validation from the reviewed source state;
+2. land the Workspace Prototype Studio source pull request;
+3. finalize the source Review Packet and reconcile the baseline Feature and PI
+   Objective without closing the broader Delivery initiative;
+4. classify and sequence Live Integration and Deployment work separately.
 
 ## Approval
 
 Operator direction: accepted for governed baseline promotion on 2026-07-30.
 
-Durable approval reference: not issued.
+Durable approval reference:
+`record://design-baselines/governance-operations-console-2026-07-30`.

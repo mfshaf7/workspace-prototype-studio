@@ -18,7 +18,7 @@ assistance, and authority-owned waiver or accepted-risk decision visibility.
 
 ## Current Lifecycle
 
-- lifecycle: `candidate`
+- lifecycle: `baseline-approved`
 - visibility tier: `private-internal`
 - data mode: `real-readonly`
 - mutation boundary: `prototype-local`

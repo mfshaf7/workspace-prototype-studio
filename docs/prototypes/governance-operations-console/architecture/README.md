@@ -1,6 +1,6 @@
 # Governance Operations Console Architecture
 
-Status: canonical pre-baseline target-system model.
+Status: canonical approved-baseline target-system model.
 
 This directory replaces the former single `architecture-diagrams.md` record.
 The architecture is model-first:
@@ -11,9 +11,9 @@ The architecture is model-first:
   cross-domain authority, lifecycle, handoff, or implementation-maturity fact
   declared here.
 
-The model is owned by Workspace Prototype Studio while the Console remains a
-candidate. It is not a workspace-wide runtime contract and does not authorize
-cross-repo implementation.
+The model is owned by Workspace Prototype Studio while the Console remains an
+approved prototype baseline. It is not a workspace-wide runtime contract and
+does not authorize cross-repo implementation.
 
 ## Read Order
 
