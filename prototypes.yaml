@@ -10,24 +10,44 @@ prototypes:
   - id: governance-operations-console
     name: Workspace Governance Operations Console
     portfolio: internal-product
-    lifecycle: candidate
+    lifecycle: baseline-approved
     owner: Workspace Governance
     product_owner: mfshaf7
-    delivery_refs:
-      - openproject://work_packages/417
-      - openproject://work_packages/681
-      - openproject://work_packages/694
+    linked_records:
+      - role: delivery-initiative
+        ref: openproject://work_packages/417
+        system: openproject
+        level: epic
+        label: Governance Operations Console delivery initiative
+      - role: studio-anchor
+        ref: openproject://work_packages/681
+        system: openproject
+        level: epic
+        label: Workspace Prototype Studio architecture anchor
+      - role: candidate-record
+        ref: openproject://work_packages/694
+        system: openproject
+        level: user-story
+        parent_ref: openproject://work_packages/693
+        label: Governance Operations Console prototype candidate record
+      - role: baseline-record
+        ref: record://design-baselines/governance-operations-console-2026-07-30
+        system: prototype-studio
+        level: record
+        label: Governance Operations Console approved design baseline
     visibility_tier: private-internal
-    data_mode: synthetic
-    mutation_boundary: read-only
+    data_mode: real-readonly
+    mutation_boundary: prototype-local
     target_runtime_lane: prototype-devint
-    design_baseline_ref: null
+    design_baseline_ref: record://design-baselines/governance-operations-console-2026-07-30
     graduation_ref: null
     retirement_ref: null
-    security_review_refs: []
+    security_review_refs:
+      - security-architecture/docs/reviews/components/2026-05-06-workspace-prototype-studio-product-incubation-baseline.md
+      - security-architecture/docs/reviews/components/2026-07-30-governance-operations-console-baseline-security-delta.md
     paths:
       brief: docs/prototypes/governance-operations-console/brief.md
       backlog: docs/prototypes/governance-operations-console/backlog.md
+      design_profile: docs/prototypes/governance-operations-console/design-profile.md
       change_log: docs/prototypes/governance-operations-console/change-log.md
       decision_log: docs/prototypes/governance-operations-console/decision-log.md
-

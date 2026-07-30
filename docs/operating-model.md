@@ -10,10 +10,12 @@ are mature enough for governed delivery.
 2. If the idea needs prototype exploration, add or update a record in
    `prototypes.yaml`.
 3. Create the prototype files under `docs/prototypes/<prototype-id>/`.
-4. Use mock or synthetic data by default.
-5. Create a design baseline record only when the operator accepts the design
+4. Create or update the prototype design profile before UI work is treated as
+   baseline-ready.
+5. Use mock or synthetic data by default.
+6. Create a design baseline record only when the operator accepts the design
    direction.
-6. Graduate the prototype when it needs durable delivery, real runtime,
+7. Graduate the prototype when it needs durable delivery, real runtime,
    client-facing review, or long-lived source ownership.
 
 ## Lifecycle Transitions
@@ -26,12 +28,57 @@ retirement.
 `baseline-approved` means the design direction is accepted and implementation
 can proceed against the baseline.
 
-`graduating` means the work is moving to Workspace Delivery ART, an existing
-repo, a new repo, or a client portfolio.
+Baseline approval does not mean the prototype has live backend authority. It
+means the operator shape, visual language, workflow states, and local proof are
+accepted enough for implementation or graduation work to proceed deliberately.
+
+`graduating` means a route-specific lifecycle transition is moving the work to
+Workspace Delivery ART, an existing repo, a new repo, or an admitted platform
+path. The source domain, validator, target domain, named decision authority,
+orchestration, and target adapter retain their distinct authorities.
 
 `graduated` means this repo is no longer the source of truth.
 
 `retired` means the work is intentionally stopped.
+
+## Linked Records
+
+`prototypes.yaml` uses typed `linked_records` for traceability to proposal,
+delivery, baseline, graduation, and retirement records. These links do not
+drive prototype lifecycle state by themselves.
+
+Lifecycle state comes from the prototype registry fields and required records:
+
+- `lifecycle`
+- `design_baseline_ref`
+- `graduation_ref`
+- `retirement_ref`
+
+Linked OpenProject records may be at different ART levels, such as an Epic
+anchor, a Feature parent, or a User story evidence record. The operator surface
+must display each link by role instead of treating every linked work package as
+the same kind of delivery state. The retired untyped `delivery_refs` field must
+not be used for new prototype records.
+
+## Baseline Boundary
+
+Prototype Studio separates baseline shaping from live implementation.
+
+Before baseline approval, a prototype may own mock, synthetic, approved
+read-only, or prototype-local behavior that proves the product and operator
+workflow. It may also define component rules, local persistence, focused smoke
+checks, visual evidence, and records that explain what the baseline includes.
+
+After baseline approval, or during graduation, the work may move into durable
+backend wiring, real-system mutation, durable receipt ledgers, live
+persistence, complete live-contract regression, governed runtime activation,
+or owner-repo promotion. Those responsibilities must not be hidden inside a
+pre-baseline prototype unless the prototype record explicitly admits the data
+mode and the required security/governance evidence exists.
+
+When a prototype discovers backend/live work before baseline approval, record
+it as post-baseline or graduation work instead of presenting local mock
+behavior as a finished system.
 
 ## Visibility Tiers
 
@@ -69,15 +116,52 @@ Graduate when any of these become true:
 - the prototype needs governed stage or prod
 - multiple operators or clients depend on it
 
-## Portfolio Routing
+## Product Portfolio Publication
 
-Internal tools use the internal product portfolio until they graduate into the
-workspace system or a dedicated product repo.
+Portfolio is the managed-product catalog and operator showcase for graduated,
+durable products. It is not a build lane, a generic posture register, or a
+Prototype visibility mechanism.
 
-Client apps use the client app delivery portfolio. A separate client-visible
-project is created only when confidentiality and access controls are ready.
+Most new work flows from Workspace Proposals into Prototype Studio or Workspace
+Delivery ART. A Prototype may use its own Preview Runtime for early visibility,
+but it cannot publish directly into Portfolio. It must first graduate to a
+durable product owner and managed runtime or distribution path.
+
+A Delivery closeout may produce a product-publication candidate when the
+outcome creates a new product, release, or material product update. Non-product
+Delivery outcomes remain Delivery history. Product identity and maturity come
+from the workspace product registry; product description comes from a
+product-owned manifest; Platform and Security retain runtime, exposure, and
+acceptance authority.
+
+Portfolio admission validates those source-backed facts and creates or updates
+one product entry. Portfolio controls listing and curation only. It does not
+grant runtime access, widen exposure, approve security posture, or take source
+custody from Proposal, Prototype, Delivery, or an owner repository.
 
 Workspace system tools, such as the Governance Operations Console, may start
 here but graduate to Workspace Delivery ART when they become part of the
 governed system.
 
+## Interface Design Discipline
+
+UI work in this repo uses the workspace `interface-design-discipline` skill.
+Each active UI prototype must keep a design profile in its prototype record.
+
+The design profile is the project-local contract for visual direction,
+typography, status semantics, responsive policy, source-of-truth assumptions,
+and reusable patterns. It lets prototype work move quickly without forcing every
+future UI to inherit the same look.
+
+See [interface-design-discipline.md](interface-design-discipline.md).
+
+## Source Structure Discipline
+
+Prototype source must keep ownership boundaries visible while moving quickly.
+Use [source-structure-discipline.md](source-structure-discipline.md) before
+changing component structure, workflow session architecture, shared primitives,
+read models, selectors, CSS ownership, or validation guards.
+
+The goal is resumable work: each substantial surface should be coherent enough
+to pause, switch away, and resume later through records, predictable modules,
+and focused guards rather than chat memory.

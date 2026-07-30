@@ -1,0 +1,13 @@
+.DS_Store
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+__pycache__/
+*.py[cod]
+apps/governance-operations-console/tmp/
+.env
+.env.*
+!.env.example
