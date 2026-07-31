@@ -1,6 +1,6 @@
 # Workspace Governance Operations Console Brief
 
-Status: current prototype brief.
+Status: graduated prototype history.
 
 This file exists because `prototypes.yaml` requires a brief path. The detailed
 system contract lives in [`system-design.md`](system-design.md). Use this file
@@ -16,13 +16,17 @@ admission, Workspace Delivery ART, Prototype Studio, managed Product Portfolio,
 lifecycle-transition visibility, runtime readiness, model operations, agent
 assistance, and authority-owned waiver or accepted-risk decision visibility.
 
-## Current Lifecycle
+## Graduation State
 
-- lifecycle: `baseline-approved`
+- lifecycle: `graduated`
 - visibility tier: `private-internal`
 - data mode: `real-readonly`
 - mutation boundary: `prototype-local`
-- runtime lane: `prototype-devint`
+- runtime lane: `owner-repo-local-preview`
+- durable source:
+  [Governance Operations Console](https://github.com/mfshaf7/governance-operations-console)
+- graduation record:
+  `record://graduations/governance-operations-console-2026-07-31`
 
 ## Read First
 

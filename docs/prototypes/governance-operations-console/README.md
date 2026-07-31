@@ -1,10 +1,12 @@
 # Governance Operations Console Record Index
 
-Status: normalized read-first index for the local prototype contract.
+Status: graduated historical record index.
 
-This directory owns the Governance Operations Console prototype records inside
-Workspace Prototype Studio. The console is still a prototype, but the records
-below are the authority order for future design and implementation work.
+This directory retains the approved Governance Operations Console prototype
+history inside Workspace Prototype Studio. Durable product source and current
+product-local records now live in the
+[Governance Operations Console owner repository](https://github.com/mfshaf7/governance-operations-console).
+Do not resume product implementation from this historical copy.
 
 ## Read Order
 
@@ -64,20 +66,18 @@ below are the authority order for future design and implementation work.
    - `decision-log.md`
    - `change-log.md`
 
-Retired planning and audit records have been removed from the active record
-set. If an implementation question is not answered by the files above, stop and
-update the normalized contract rather than searching for older guidance.
+The records below preserve the approved baseline and its design history. Their
+source paths and implementation-maturity statements describe the prototype at
+the time of approval; current product decisions belong in the owner repository.
 
 ## Resume Rule
 
-After context compaction or restart, resume console work by reading this file,
-then `system-design.md`, then `architecture/README.md`, then the specific domain
-or surface contract being changed. Do not rely on chat memory for accepted
-structure.
+After context compaction or restart, use this index only for prototype
+provenance. Resume current Console work from the owner repository.
 
 ## Phase Discipline
 
-Console work moves in explicit phases:
+The graduated product retains this historical phase discipline:
 
 1. Normalize records and read order.
 2. Confirm or update the relevant domain or surface contract.
@@ -87,12 +87,5 @@ Console work moves in explicit phases:
 6. Report remaining percentage against the active full-plan phase and the next
    move.
 
-Any visual, structural, workflow, persistence, source-of-truth, or primitive
-change that is not already covered by the contract must be discussed before
-implementation.
-
-If a slice changes a cross-domain role, authority, lifecycle, handoff, trust
-boundary, or implementation maturity, update
-`architecture/system-model.yaml`, every affected registered architecture view,
-and the detailed domain or surface contract in the same slice before calling
-that work complete.
+Current changes must update the corresponding records and validation in the
+owner repository, not this archived packet.

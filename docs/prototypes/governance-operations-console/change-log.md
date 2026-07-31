@@ -1,10 +1,21 @@
 # Governance Operations Console Change Log
 
-Status: current local prototype change log.
+Status: historical prototype change log after source graduation.
 
 Historical entries describe the architecture that existed when each change was
 made. They do not override current contracts. Active lifecycle-transition truth
 lives in `surface-contracts/lifecycle-transitions.md`.
+
+## 2026-07-31
+
+- Graduated durable source custody to the Governance Operations Console owner
+  repository through source PR
+  [#3](https://github.com/mfshaf7/governance-operations-console/pull/3).
+- Bound the exact source head to Security Architecture review
+  [#93](https://github.com/mfshaf7/security-architecture/pull/93).
+- Removed the competing active application copy from Workspace Prototype
+  Studio while retaining this historical record set and the approved design
+  baseline.
 
 ## 2026-07-30
 
