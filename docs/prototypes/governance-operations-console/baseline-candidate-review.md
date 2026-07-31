@@ -4,6 +4,10 @@ Status: approved local baseline recorded for governed source landing. The
 operator approved the baseline on 2026-07-30. This record does not authorize
 live integration, live mutation, deployment, or source graduation.
 
+The reviewed source subsequently graduated on 2026-07-31 through
+[Governance Operations Console PR #3](https://github.com/mfshaf7/governance-operations-console/pull/3).
+The fields below preserve the point-in-time baseline approval state.
+
 ## Prototype Identity
 
 - prototype: `governance-operations-console`

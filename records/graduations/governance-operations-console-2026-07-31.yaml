@@ -1,0 +1,32 @@
+schema_version: 1
+prototype_id: governance-operations-console
+graduated_on: "2026-07-31"
+decision: graduated
+graduation_ref: record://graduations/governance-operations-console-2026-07-31
+art_refs:
+  - openproject://work_packages/784
+  - openproject://work_packages/785
+source:
+  owner_repo: workspace-prototype-studio
+  application_path: apps/governance-operations-console
+  application_commit: aa12fdbb9b4f7b16c8ac2d2229c4dd4f6c95ec98
+  application_tree: 28647acecce1709f408f5b8b1f6e3f944cb46104
+target:
+  owner_repo: governance-operations-console
+  reviewed_source_commit: 9d8d2f0e550cd14ee915ecdb0aadd5cceddcc38d
+  merge_commit: 56a6a1bbf0f837e294d54ce0adb750a27f45d586
+  source_pr: https://github.com/mfshaf7/governance-operations-console/pull/3
+security_review:
+  decision: approved-with-findings
+  review_ref: security-architecture/docs/reviews/components/2026-07-31-governance-operations-console-source-graduation.md
+  review_pr: https://github.com/mfshaf7/security-architecture/pull/93
+retained:
+  - docs/prototypes/governance-operations-console
+  - records/design-baselines/governance-operations-console-2026-07-30.yaml
+removed:
+  - apps/governance-operations-console
+constraints:
+  - Workspace Prototype Studio retains prototype history and the graduation record, not active product source.
+  - Owner-repository local preview remains loopback-only.
+  - Operational records remain fixture-backed or synthetic and local writes remain disposable.
+  - Live backend mutation, authenticated identity, governed AI, deployment, stage, production, release, and public exposure require separate governed work.

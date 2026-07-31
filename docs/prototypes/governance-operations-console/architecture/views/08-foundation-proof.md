@@ -56,7 +56,7 @@ adapters belong outside the pre-baseline Console.
 | **Total** | **54** | **42 Console-local; 12 contract-simulated.** |
 
 The catalog is
-[`foundation-route-catalog.json`](../../../../../apps/governance-operations-console/tests/system-simulation/foundation-route-catalog.json).
+[`foundation-route-catalog.json`](https://github.com/mfshaf7/governance-operations-console/blob/9d8d2f0e550cd14ee915ecdb0aadd5cceddcc38d/tests/system-simulation/foundation-route-catalog.json).
 The test fails when a catalogued behavior lacks a proof or when route ids are
 duplicated.
 

@@ -10,7 +10,7 @@ prototypes:
   - id: governance-operations-console
     name: Workspace Governance Operations Console
     portfolio: internal-product
-    lifecycle: baseline-approved
+    lifecycle: graduated
     owner: Workspace Governance
     product_owner: mfshaf7
     linked_records:
@@ -35,12 +35,17 @@ prototypes:
         system: prototype-studio
         level: record
         label: Governance Operations Console approved design baseline
+      - role: graduation-record
+        ref: record://graduations/governance-operations-console-2026-07-31
+        system: prototype-studio
+        level: record
+        label: Governance Operations Console source graduation
     visibility_tier: private-internal
     data_mode: real-readonly
     mutation_boundary: prototype-local
-    target_runtime_lane: prototype-devint
+    target_runtime_lane: owner-repo-local-preview
     design_baseline_ref: record://design-baselines/governance-operations-console-2026-07-30
-    graduation_ref: null
+    graduation_ref: record://graduations/governance-operations-console-2026-07-31
     retirement_ref: null
     security_review_refs:
       - security-architecture/docs/reviews/components/2026-05-06-workspace-prototype-studio-product-incubation-baseline.md

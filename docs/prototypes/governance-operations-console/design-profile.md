@@ -1,9 +1,10 @@
 # Governance Operations Console Design Profile
 
-Status: current prototype design profile.
+Status: historical approved prototype design profile after source graduation.
 
 This file exists because `prototypes.yaml` requires a design profile path. The
-active visual and structural rules live in the normalized contract set:
+current visual and structural rules now live in the Governance Operations
+Console owner repository. This copy preserves the approved prototype baseline.
 
 - [`system-design.md`](system-design.md)
 - [`operation-workbench-contract.md`](operation-workbench-contract.md)

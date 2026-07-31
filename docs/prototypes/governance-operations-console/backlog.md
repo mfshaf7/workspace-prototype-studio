@@ -1,9 +1,10 @@
 # Governance Operations Console Backlog
 
-Status: current active backlog.
+Status: archived prototype backlog after source graduation.
 
-Use this file for near-term prototype work only. Architecture, visual, Teras,
-domain, and surface rules live in the normalized contract files.
+This backlog preserves the work completed before source graduation. New product
+work belongs in the Governance Operations Console owner repository and the
+appropriate Workspace Delivery ART item.
 
 ## Completed Local Prototype Outcomes
 

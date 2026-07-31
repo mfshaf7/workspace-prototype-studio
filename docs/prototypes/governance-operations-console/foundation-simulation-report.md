@@ -22,7 +22,7 @@ local HTTP server and verifies the returned HTML, CSS, and executable
 JavaScript.
 
 Source:
-[`tests/system-simulation/fixtures/focus-timer-app/`](../../../apps/governance-operations-console/tests/system-simulation/fixtures/focus-timer-app/)
+[`tests/system-simulation/fixtures/focus-timer-app/`](https://github.com/mfshaf7/governance-operations-console/tree/9d8d2f0e550cd14ee915ecdb0aadd5cceddcc38d/tests/system-simulation/fixtures/focus-timer-app)
 
 ## Result
 

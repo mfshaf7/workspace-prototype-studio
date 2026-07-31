@@ -1,11 +1,23 @@
 # Governance Operations Console Decision Log
 
-Status: current decision log.
+Status: historical prototype decision log after source graduation.
 
 Historical discussion has been consolidated into the normalized contract files.
 Do not use deleted master-plan, old audit, or deep-design records as active
 guidance. When dated entries conflict, the later decision supersedes the
 earlier one.
+
+## 2026-07-31
+
+- Decision: durable Governance Operations Console source and current
+  product-local contracts are owned by the
+  [Governance Operations Console repository](https://github.com/mfshaf7/governance-operations-console).
+  Workspace Prototype Studio retains the approved baseline, prototype history,
+  and graduation record only; it must not retain a competing active source
+  copy.
+- Decision: source graduation preserves the reviewed local-only boundary. It
+  does not activate live backends, authenticated identity, governed AI,
+  deployment, stage, production, release, or public runtime authority.
 
 ## 2026-07-30
 
