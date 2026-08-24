@@ -21,6 +21,8 @@ Authoritative references for this repo are `workspace-governance`,
 - backend stubs and local prototype services when needed
 - mock and synthetic data fixtures
 - reusable prototype validation and portfolio templates
+- versioned Prototype Delivery packets that preserve source truth for later
+  governed admission
 - graduation records when a prototype moves into governed delivery, an existing
   product repo, or a new dedicated repo
 
@@ -70,3 +72,5 @@ See [docs/operating-model.md](docs/operating-model.md) for the full operator
 workflow and [docs/interface-design-discipline.md](docs/interface-design-discipline.md)
 for UI design discipline. Source structure and coding rules live in
 [docs/source-structure-discipline.md](docs/source-structure-discipline.md).
+The operator path for a baseline-approved Prototype entering Delivery is in
+[docs/prototype-delivery-packets.md](docs/prototype-delivery-packets.md).

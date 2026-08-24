@@ -5,5 +5,5 @@ description = "Fast governed prototype and product-incubation lane for the works
 requires-python = ">=3.11"
 dependencies = [
   "PyYAML>=6.0",
+  "jsonschema>=4.10",
 ]
-

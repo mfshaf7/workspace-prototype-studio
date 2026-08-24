@@ -27,3 +27,15 @@ Open a security review or link an existing one when a prototype introduces:
 - No `real-mutable` prototype without security evidence and graduation plan.
 - No client review without a client-safe evidence path.
 - No production deployment from this repo.
+
+## Prototype Delivery Packet Boundary
+
+Prototype Delivery packet production is a local source-record action. It may
+carry approved evidence references, an operator decision reference, resolved
+source-custody metadata, and exact Git provenance. It must not carry secrets,
+credentials, raw client data, or a target mutation token.
+
+The operator decision reference authorizes preparation of the Prototype source
+packet only. It does not grant WGCF readiness, Delivery admission, OOS target
+mutation, platform promotion, security acceptance, or final graduation. Those
+authorities remain fail-closed and must produce their own downstream receipts.
