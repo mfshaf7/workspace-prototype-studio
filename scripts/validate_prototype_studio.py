@@ -4,10 +4,19 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 
 import yaml
 from jsonschema import Draft202012Validator, FormatChecker
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
+
+from packages.prototype_delivery_packet.packet import (  # noqa: E402
+    PacketError,
+    validate_packet_records,
+)
 
 
 LIFECYCLES = {
@@ -34,6 +43,7 @@ LINKED_RECORD_ROLES = {
     "studio-anchor",
     "candidate-record",
     "baseline-record",
+    "delivery-packet",
     "graduation-record",
     "retirement-record",
 }
@@ -44,6 +54,9 @@ OPENPROJECT_WORK_PACKAGE_RE = re.compile(r"^openproject://work_packages/[0-9]+$"
 LINKED_RECORD_REF_RE = re.compile(r"^(openproject://work_packages/[0-9]+|repo://.+|record://.+)$")
 DESIGN_BASELINE_REF_RE = re.compile(
     r"^record://design-baselines/([a-z0-9]+(?:-[a-z0-9]+)*)$"
+)
+DELIVERY_PACKET_REF_RE = re.compile(
+    r"^record://delivery-packets/([a-z0-9]+(?:-[a-z0-9]+)*)$"
 )
 
 
@@ -68,6 +81,21 @@ def validate_registry(repo_root: Path, errors: list[str]) -> dict[str, dict]:
         return {}
 
     registry = load_yaml(registry_path)
+    schema_path = repo_root / "schemas/prototype-registry.schema.json"
+    if not schema_path.exists():
+        errors.append("missing schemas/prototype-registry.schema.json")
+    else:
+        schema = load_json(schema_path)
+        Draft202012Validator.check_schema(schema)
+        validator = Draft202012Validator(schema)
+        for schema_error in sorted(
+            validator.iter_errors(registry),
+            key=lambda item: list(item.absolute_path),
+        ):
+            errors.append(
+                f"prototypes.yaml: {schema_error_path(schema_error)}: "
+                f"{schema_error.message}"
+            )
     if registry.get("schema_version") != 1:
         errors.append("prototypes.yaml: schema_version must be 1")
 
@@ -176,8 +204,25 @@ def validate_registry(repo_root: Path, errors: list[str]) -> dict[str, dict]:
             "design_baseline_ref"
         ):
             errors.append(f"{label}: design_baseline_ref required for lifecycle {lifecycle}")
-        if lifecycle in {"graduating", "graduated"} and not prototype.get("graduation_ref"):
-            errors.append(f"{label}: graduation_ref required for lifecycle {lifecycle}")
+        if lifecycle == "graduating":
+            packet_ref = prototype.get("delivery_packet_ref")
+            if not packet_ref:
+                errors.append(f"{label}: delivery_packet_ref required for lifecycle graduating")
+            elif not DELIVERY_PACKET_REF_RE.match(str(packet_ref)):
+                errors.append(f"{label}: invalid delivery_packet_ref {packet_ref!r}")
+            linked_packets = [
+                record
+                for record in linked_records
+                if isinstance(record, dict)
+                and record.get("role") == "delivery-packet"
+                and record.get("ref") == packet_ref
+            ]
+            if not linked_packets:
+                errors.append(
+                    f"{label}: linked_records must include active delivery_packet_ref"
+                )
+        if lifecycle == "graduated" and not prototype.get("graduation_ref"):
+            errors.append(f"{label}: graduation_ref required for lifecycle graduated")
         if lifecycle == "retired" and not prototype.get("retirement_ref"):
             errors.append(f"{label}: retirement_ref required for retired prototypes")
 
@@ -343,6 +388,10 @@ def main() -> int:
     prototypes_by_id = validate_registry(repo_root, errors)
     validate_design_baseline_records(repo_root, prototypes_by_id, errors)
     validate_other_records(repo_root, errors)
+    try:
+        validate_packet_records(repo_root)
+    except PacketError as error:
+        errors.append(f"Prototype Delivery packets: {error.code}: {error}")
 
     if errors:
         for error in errors:

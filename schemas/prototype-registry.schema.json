@@ -50,6 +50,10 @@
         "mutation_boundary": {
           "enum": ["none", "read-only", "prototype-local", "external-sandbox", "real-system"]
         },
+        "delivery_packet_ref": {
+          "type": ["string", "null"],
+          "pattern": "^record://delivery-packets/[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
         "linked_records": {
           "type": "array",
           "items": { "$ref": "#/$defs/linked_record" }
@@ -67,6 +71,7 @@
             "studio-anchor",
             "candidate-record",
             "baseline-record",
+            "delivery-packet",
             "graduation-record",
             "retirement-record"
           ]

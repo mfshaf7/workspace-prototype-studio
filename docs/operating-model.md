@@ -51,8 +51,14 @@ Lifecycle state comes from the prototype registry fields and required records:
 
 - `lifecycle`
 - `design_baseline_ref`
+- `delivery_packet_ref`
 - `graduation_ref`
 - `retirement_ref`
+
+`delivery_packet_ref` is required while `graduating` and resolves to a
+versioned Prototype-owned packet under `records/delivery-packets/`.
+`graduation_ref` is required only after a target application receipt proves the
+final transition and the lifecycle becomes `graduated`.
 
 Linked OpenProject records may be at different ART levels, such as an Epic
 anchor, a Feature parent, or a User story evidence record. The operator surface

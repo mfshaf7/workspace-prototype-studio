@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://workspace-governance.local/prototype-studio/prototype-delivery-request.schema.json",
+  "title": "Prototype Delivery Packet Request V1",
+  "description": "Operator-approved source input for one Prototype Delivery packet.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "prototype_id",
+    "title",
+    "objective",
+    "included_scope",
+    "excluded_scope",
+    "remaining_work",
+    "evidence_refs",
+    "custody",
+    "authorization",
+    "source_revision",
+    "rationale"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "prototype_id": { "$ref": "#/$defs/kebab_identifier" },
+    "title": { "$ref": "#/$defs/text" },
+    "objective": { "$ref": "#/$defs/text" },
+    "included_scope": { "$ref": "#/$defs/non_empty_text_list" },
+    "excluded_scope": { "$ref": "#/$defs/text_list" },
+    "remaining_work": { "$ref": "#/$defs/non_empty_text_list" },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 200,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/identifier" }
+    },
+    "custody": { "$ref": "#/$defs/resolved_source_custody" },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "operator_id", "decision_ref"],
+      "properties": {
+        "decision": { "const": "approved" },
+        "operator_id": { "$ref": "#/$defs/identifier" },
+        "decision_ref": { "$ref": "#/$defs/identifier" }
+      }
+    },
+    "source_revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "ref", "base_commit", "head_commit"],
+      "properties": {
+        "repository": { "$ref": "#/$defs/identifier" },
+        "ref": { "$ref": "#/$defs/identifier" },
+        "base_commit": { "$ref": "#/$defs/git_commit" },
+        "head_commit": { "$ref": "#/$defs/git_commit" }
+      }
+    },
+    "rationale": { "$ref": "#/$defs/text" }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/@+\\-]{0,511}$"
+    },
+    "kebab_identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "git_commit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 10000
+    },
+    "text_list": {
+      "type": "array",
+      "maxItems": 200,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/text" }
+    },
+    "non_empty_text_list": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 200,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/text" }
+    },
+    "resolved_source_custody": {
+      "oneOf": [
+        { "$ref": "#/$defs/existing_repo_custody" },
+        { "$ref": "#/$defs/resolved_new_repo_custody" },
+        { "$ref": "#/$defs/no_repo_custody" }
+      ]
+    },
+    "existing_repo_custody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "repository_mode", "repository_gate_state", "owner", "source_ref", "rationale"],
+      "properties": {
+        "classification": { "const": "existing-repo" },
+        "repository_mode": { "const": "existing" },
+        "repository_gate_state": { "const": "resolved" },
+        "owner": { "$ref": "#/$defs/identifier" },
+        "source_ref": { "$ref": "#/$defs/identifier" },
+        "rationale": { "$ref": "#/$defs/text" }
+      }
+    },
+    "resolved_new_repo_custody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "repository_mode", "repository_gate_state", "owner", "source_ref", "rationale"],
+      "properties": {
+        "classification": { "const": "new-repo-required" },
+        "repository_mode": { "const": "new" },
+        "repository_gate_state": { "const": "resolved" },
+        "owner": { "$ref": "#/$defs/identifier" },
+        "source_ref": { "$ref": "#/$defs/identifier" },
+        "rationale": { "$ref": "#/$defs/text" }
+      }
+    },
+    "no_repo_custody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "repository_mode", "repository_gate_state", "owner", "source_ref", "rationale"],
+      "properties": {
+        "classification": { "enum": ["platform-internal", "non-source-work"] },
+        "repository_mode": { "const": "not-required" },
+        "repository_gate_state": { "const": "not-required" },
+        "owner": { "$ref": "#/$defs/identifier" },
+        "source_ref": { "type": "null" },
+        "rationale": { "$ref": "#/$defs/text" }
+      }
+    }
+  }
+}
