@@ -74,3 +74,5 @@ for UI design discipline. Source structure and coding rules live in
 [docs/source-structure-discipline.md](docs/source-structure-discipline.md).
 The operator path for a baseline-approved Prototype entering Delivery is in
 [docs/prototype-delivery-packets.md](docs/prototype-delivery-packets.md).
+The separate source-only Workspace Intake path is in
+[docs/prototype-intake-candidates.md](docs/prototype-intake-candidates.md).

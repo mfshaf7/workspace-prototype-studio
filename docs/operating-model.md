@@ -124,6 +124,11 @@ Graduate when any of these become true:
 
 ## Product Portfolio Publication
 
+Workspace Intake entrant candidates are a separate source projection. They
+preserve the approved baseline and stable prototype identity without changing
+lifecycle, classifying the entrant, or assigning its durable owner. Use
+[Prototype Intake Candidates](prototype-intake-candidates.md) for that path.
+
 Portfolio is the managed-product catalog and operator showcase for graduated,
 durable products. It is not a build lane, a generic posture register, or a
 Prototype visibility mechanism.
