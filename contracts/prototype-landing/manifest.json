@@ -2,7 +2,7 @@
   "schema_version": 1,
   "contract_id": "prototype-studio.prototype-landing-source.v1",
   "authority_repo": "workspace-governance",
-  "authority_commit": "015e5a7bcca98f752f7b4e3e25996f4af868d292",
+  "authority_commit": "eb7fb3c182073d050e2cb95c4f3256be3c535eaa",
   "security_review": {
     "repo": "security-architecture",
     "commit": "484de62d69b5291d39a0e3d317862cdf44f77150",
@@ -15,7 +15,7 @@
     "prototype-landing-entry-packet.schema.json": "62b0216695898254d7088f6b709ba53c5a4bfb0e5a28c0a0e0a288405e4e222a",
     "prototype-landing-request.schema.json": "1102471f8cf883bf2470a309718f648dfb3873e2c03dbb3657d6ac6dcd0a4a0d",
     "prototype-landing-plan.schema.json": "1baa300b6b387bebed73a31c9eed978ec2f3f6f5e3a44d3877765e0c54bf9a7b",
-    "prototype-landing-readiness.schema.json": "3ec2c3188db7b2c8dd1cda68233b900f06c642610969c39ffa3a4f2ef6309840",
+    "prototype-landing-readiness.schema.json": "49fdf9c0d44dcacc131778f14a8857a66dff0f2e85296b3e9c153a04fb6357c3",
     "prototype-landing-apply.schema.json": "1d940eeecd16ed1d44a4a2532a65e06cc0a924be3ae86d06f1f340da013274c7",
     "prototype-landing-readback.schema.json": "b62256820676cc2314ce1e2a4a77240415365014e81e309bddaaca25a79bd6a2",
     "prototype-landing-receipt.schema.json": "01d1c14cee056e5ff7110c9cc8d5637f7139a4fa60e2f1b0ba768ef4cdfb1b85"
