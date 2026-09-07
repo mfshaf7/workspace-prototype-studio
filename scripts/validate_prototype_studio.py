@@ -17,6 +17,7 @@ from packages.prototype_delivery_packet.packet import (  # noqa: E402
     PacketError,
     validate_packet_records,
 )
+from packages.prototype_landing.landing import validate_landing_records  # noqa: E402
 
 
 LIFECYCLES = {
@@ -39,6 +40,7 @@ MUTATION_BOUNDARIES = {
 }
 LINKED_RECORD_ROLES = {
     "proposal-source",
+    "landing-record",
     "delivery-initiative",
     "studio-anchor",
     "candidate-record",
@@ -115,7 +117,6 @@ def validate_registry(repo_root: Path, errors: list[str]) -> dict[str, dict]:
         for key in (
             "id",
             "name",
-            "portfolio",
             "lifecycle",
             "owner",
             "visibility_tier",
@@ -134,8 +135,10 @@ def validate_registry(repo_root: Path, errors: list[str]) -> dict[str, dict]:
         if prototype_id:
             prototypes_by_id[prototype_id] = prototype
 
-        if prototype.get("portfolio") not in PORTFOLIOS:
+        if "portfolio" in prototype and prototype.get("portfolio") not in PORTFOLIOS:
             errors.append(f"{label}: invalid portfolio {prototype.get('portfolio')!r}")
+        if prototype.get("lifecycle") != "exploring" and not prototype.get("portfolio"):
+            errors.append(f"{label}: portfolio is required after exploring")
         if prototype.get("lifecycle") not in LIFECYCLES:
             errors.append(f"{label}: invalid lifecycle {prototype.get('lifecycle')!r}")
         if prototype.get("visibility_tier") not in VISIBILITY_TIERS:
@@ -392,6 +395,10 @@ def main() -> int:
         validate_packet_records(repo_root)
     except PacketError as error:
         errors.append(f"Prototype Delivery packets: {error.code}: {error}")
+    try:
+        validate_landing_records(repo_root)
+    except PacketError as error:
+        errors.append(f"Prototype Landing records: {error.code}: {error}")
 
     if errors:
         for error in errors:

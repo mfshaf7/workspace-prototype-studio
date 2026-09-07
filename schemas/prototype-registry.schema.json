@@ -17,7 +17,6 @@
       "required": [
         "id",
         "name",
-        "portfolio",
         "lifecycle",
         "owner",
         "visibility_tier",
@@ -28,6 +27,7 @@
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
         "name": { "type": "string", "minLength": 1 },
+        "objective": { "type": "string", "minLength": 1 },
         "portfolio": {
           "enum": ["internal-product", "client-app", "workspace-system", "experiment"]
         },
@@ -40,6 +40,9 @@
             "graduated",
             "retired"
           ]
+        },
+        "project_phase": {
+          "enum": ["incubating", "delivery", "operational", "retired"]
         },
         "visibility_tier": {
           "enum": ["private-internal", "operator-review", "client-review", "public-demo"]
@@ -54,6 +57,10 @@
           "type": ["string", "null"],
           "pattern": "^record://delivery-packets/[a-z0-9]+(?:-[a-z0-9]+)*$"
         },
+        "landing_record_ref": {
+          "type": "string",
+          "pattern": "^record://prototype-landings/[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
         "linked_records": {
           "type": "array",
           "items": { "$ref": "#/$defs/linked_record" }
@@ -67,6 +74,7 @@
         "role": {
           "enum": [
             "proposal-source",
+            "landing-record",
             "delivery-initiative",
             "studio-anchor",
             "candidate-record",

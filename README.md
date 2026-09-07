@@ -21,6 +21,7 @@ Authoritative references for this repo are `workspace-governance`,
 - backend stubs and local prototype services when needed
 - mock and synthetic data fixtures
 - reusable prototype validation and portfolio templates
+- source-authoritative Prototype Landing records and review-branch receipts
 - versioned Prototype Delivery packets that preserve source truth for later
   governed admission
 - graduation records when a prototype moves into governed delivery, an existing
@@ -43,9 +44,9 @@ Authoritative references for this repo are `workspace-governance`,
 make validate
 ```
 
-Create a prototype by copying the template under
-`docs/prototypes/_template/`, adding an entry to `prototypes.yaml`, and running
-the validator.
+New Prototype records use the deterministic Landing owner command rather than
+manual template and registry copying. See
+[docs/prototype-landing.md](docs/prototype-landing.md).
 
 ## Security Baseline
 
