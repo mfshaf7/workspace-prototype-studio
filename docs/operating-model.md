@@ -7,9 +7,11 @@ are mature enough for governed delivery.
 
 1. Capture the idea in Workspace Proposals when the work is more than a local
    sketch.
-2. If the idea needs prototype exploration, add or update a record in
-   `prototypes.yaml`.
-3. Create the prototype files under `docs/prototypes/<prototype-id>/`.
+2. If the idea needs prototype exploration, capture a Prototype Entry Packet
+   and accepted Landing request.
+3. Apply a ready Landing through the owner command on a non-default review
+   branch. The command creates the registry record and prototype files
+   together.
 4. Create or update the prototype design profile before UI work is treated as
    baseline-ready.
 5. Use mock or synthetic data by default.
@@ -17,6 +19,10 @@ are mature enough for governed delivery.
    direction.
 7. Graduate the prototype when it needs durable delivery, real runtime,
    client-facing review, or long-lived source ownership.
+
+The command and its source/readiness/workflow boundaries are documented in
+[Prototype Landing](prototype-landing.md). Direct edits to create a new
+Prototype are a recovery path, not the normal operator workflow.
 
 ## Lifecycle Transitions
 
