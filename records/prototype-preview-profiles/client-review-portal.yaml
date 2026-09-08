@@ -1,0 +1,6 @@
+schema_version: 1
+prototype_id: prototype:client-review-portal
+status: draft
+support_profile: interactive
+preview_mode: static
+runtime_activation: false
