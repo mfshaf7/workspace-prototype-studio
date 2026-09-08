@@ -1,0 +1,52 @@
+schema_version: 1
+prototype_id: prototype:client-review-portal
+support_rows:
+- detail: Landing has enough source context to create a local prototype record.
+  dimension: source
+  generated: true
+  state: ready
+- detail: Decides where docs, fixtures, source, or custody notes belong during incubation.
+  dimension: studio-home
+  generated: true
+  state: ready
+- detail: Describes whether the prototype needs visible UI, command, API, workflow,
+    or review surface support.
+  dimension: interface
+  generated: true
+  state: needed
+- detail: Decides the minimum way an operator can open, run, or preview the work locally.
+  dimension: runtime
+  generated: true
+  state: ready
+- detail: Controls whether mock, synthetic, real read-only, or real mutable data is
+    allowed.
+  dimension: data
+  generated: true
+  state: ready
+- detail: Keeps external reads, sandbox writes, real-system mutation, and adapter
+    boundaries explicit.
+  dimension: integration
+  generated: true
+  state: not-needed
+- detail: Records the install, start, preview, fixture, smoke, or validation commands
+    needed for continuation.
+  dimension: tooling
+  generated: true
+  state: needed
+- detail: Identifies brief, backlog, decision log, change log, design profile, validation
+    proof, and receipts.
+  dimension: evidence
+  generated: true
+  state: needed
+- detail: Keeps private, operator-review, client-review, and public-demo exposure
+    requirements explicit.
+  dimension: visibility
+  generated: true
+  state: ready
+- detail: Landing can record missing support as needed items and route the first required
+    move.
+  dimension: recovery
+  generated: true
+  state: ready
+runtime_validation: not-authorized
+next_action: candidate-promotion

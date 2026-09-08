@@ -1,0 +1,29 @@
+{
+  "apply_digest": "sha256:72735018c2351d3db8520eb5e815c225fbcfdf333e1ae7f1141976969259fc72",
+  "apply_id": "prototype-landing-apply:client-review-portal:1788846795134",
+  "artifact_type": "prototype-landing-apply",
+  "correlation_id": "correlation:client-review-portal:1788846795134",
+  "expected_state": {
+    "record_present": false,
+    "registry_digest": "sha256:a7226145c9b107af24cbe993d4929a2b0e2ca850f82a35ec2d06095c8c59236c",
+    "source_revision": "2d18349ffab42bff052061e5adbc1d2c76d6210c"
+  },
+  "idempotency_key": "landing:client-review-portal:1788846795134",
+  "operator_approval_ref": "console://prototype-landing/approvals/prototype-landing-request%3Aclient-review-portal%3A1788846795134",
+  "plan_ref": {
+    "digest": "sha256:34a5f1a35f5716131dff1320258a1fdd82b38d422f03c55b4ee37dad4b4767a8",
+    "id": "prototype-landing-plan:client-review-portal:1788846795134"
+  },
+  "prototype_id": "prototype:client-review-portal",
+  "readiness_ref": {
+    "digest": "sha256:0bdb78835d9ec029dc8e0cacbadf8fdd95ed6da09d23504e3799fa5ad916c525",
+    "id": "prototype-landing-readiness:client-review-portal:1788846795134"
+  },
+  "request_ref": {
+    "digest": "sha256:771c35882e97f7c448f15da13af3d54786e5c20fba74c1e6f6dbf9f19535a61d",
+    "id": "prototype-landing-request:client-review-portal:1788846795134"
+  },
+  "requested_at": "2026-09-08T06:14:49.866Z",
+  "schema_version": 1,
+  "source_branch": "prototype-landing/59facbbecae0783d9d746e4e0fc4a754f2d42d9db7eaa92a9bb94889326b10b1"
+}

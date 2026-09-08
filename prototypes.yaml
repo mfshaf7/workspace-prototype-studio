@@ -7,52 +7,75 @@ studio:
   default_data_mode: synthetic
   default_mutation_boundary: none
 prototypes:
-  - id: governance-operations-console
-    name: Workspace Governance Operations Console
-    portfolio: internal-product
-    lifecycle: graduated
-    owner: Workspace Governance
-    product_owner: mfshaf7
-    linked_records:
-      - role: delivery-initiative
-        ref: openproject://work_packages/417
-        system: openproject
-        level: epic
-        label: Governance Operations Console delivery initiative
-      - role: studio-anchor
-        ref: openproject://work_packages/681
-        system: openproject
-        level: epic
-        label: Workspace Prototype Studio architecture anchor
-      - role: candidate-record
-        ref: openproject://work_packages/694
-        system: openproject
-        level: user-story
-        parent_ref: openproject://work_packages/693
-        label: Governance Operations Console prototype candidate record
-      - role: baseline-record
-        ref: record://design-baselines/governance-operations-console-2026-07-30
-        system: prototype-studio
-        level: record
-        label: Governance Operations Console approved design baseline
-      - role: graduation-record
-        ref: record://graduations/governance-operations-console-2026-07-31
-        system: prototype-studio
-        level: record
-        label: Governance Operations Console source graduation
-    visibility_tier: private-internal
-    data_mode: real-readonly
-    mutation_boundary: prototype-local
-    target_runtime_lane: owner-repo-local-preview
-    design_baseline_ref: record://design-baselines/governance-operations-console-2026-07-30
-    graduation_ref: record://graduations/governance-operations-console-2026-07-31
-    retirement_ref: null
-    security_review_refs:
-      - security-architecture/docs/reviews/components/2026-05-06-workspace-prototype-studio-product-incubation-baseline.md
-      - security-architecture/docs/reviews/components/2026-07-30-governance-operations-console-baseline-security-delta.md
-    paths:
-      brief: docs/prototypes/governance-operations-console/brief.md
-      backlog: docs/prototypes/governance-operations-console/backlog.md
-      design_profile: docs/prototypes/governance-operations-console/design-profile.md
-      change_log: docs/prototypes/governance-operations-console/change-log.md
-      decision_log: docs/prototypes/governance-operations-console/decision-log.md
+- id: governance-operations-console
+  name: Workspace Governance Operations Console
+  portfolio: internal-product
+  lifecycle: graduated
+  owner: Workspace Governance
+  product_owner: mfshaf7
+  linked_records:
+  - role: delivery-initiative
+    ref: openproject://work_packages/417
+    system: openproject
+    level: epic
+    label: Governance Operations Console delivery initiative
+  - role: studio-anchor
+    ref: openproject://work_packages/681
+    system: openproject
+    level: epic
+    label: Workspace Prototype Studio architecture anchor
+  - role: candidate-record
+    ref: openproject://work_packages/694
+    system: openproject
+    level: user-story
+    parent_ref: openproject://work_packages/693
+    label: Governance Operations Console prototype candidate record
+  - role: baseline-record
+    ref: record://design-baselines/governance-operations-console-2026-07-30
+    system: prototype-studio
+    level: record
+    label: Governance Operations Console approved design baseline
+  - role: graduation-record
+    ref: record://graduations/governance-operations-console-2026-07-31
+    system: prototype-studio
+    level: record
+    label: Governance Operations Console source graduation
+  visibility_tier: private-internal
+  data_mode: real-readonly
+  mutation_boundary: prototype-local
+  target_runtime_lane: owner-repo-local-preview
+  design_baseline_ref: record://design-baselines/governance-operations-console-2026-07-30
+  graduation_ref: record://graduations/governance-operations-console-2026-07-31
+  retirement_ref: null
+  security_review_refs:
+  - security-architecture/docs/reviews/components/2026-05-06-workspace-prototype-studio-product-incubation-baseline.md
+  - security-architecture/docs/reviews/components/2026-07-30-governance-operations-console-baseline-security-delta.md
+  paths:
+    brief: docs/prototypes/governance-operations-console/brief.md
+    backlog: docs/prototypes/governance-operations-console/backlog.md
+    design_profile: docs/prototypes/governance-operations-console/design-profile.md
+    change_log: docs/prototypes/governance-operations-console/change-log.md
+    decision_log: docs/prototypes/governance-operations-console/decision-log.md
+- id: client-review-portal
+  name: Client Review Portal Concept
+  objective: Exploring client-visible status surface with no approved client boundary
+    yet.
+  lifecycle: exploring
+  project_phase: incubating
+  owner: Workspace Prototype Studio
+  linked_records:
+  - role: landing-record
+    ref: record://prototype-landings/client-review-portal
+    system: prototype-studio
+    level: record
+    label: Prototype Landing source record
+  visibility_tier: private-internal
+  data_mode: synthetic
+  mutation_boundary: none
+  landing_record_ref: record://prototype-landings/client-review-portal
+  paths:
+    brief: docs/prototypes/client-review-portal/brief.md
+    backlog: docs/prototypes/client-review-portal/backlog.md
+    design_profile: docs/prototypes/client-review-portal/design-profile.md
+    change_log: docs/prototypes/client-review-portal/change-log.md
+    decision_log: docs/prototypes/client-review-portal/decision-log.md
