@@ -48,6 +48,9 @@ New Prototype records use the deterministic Landing owner command rather than
 manual template and registry copying. See
 [docs/prototype-landing.md](docs/prototype-landing.md).
 
+Candidate and Baseline Promotion use the separate deterministic maturity owner
+command. See [docs/prototype-maturity.md](docs/prototype-maturity.md).
+
 ## Security Baseline
 
 The security review baseline for this lane is maintained in
@@ -73,6 +76,8 @@ See [docs/operating-model.md](docs/operating-model.md) for the full operator
 workflow and [docs/interface-design-discipline.md](docs/interface-design-discipline.md)
 for UI design discipline. Source structure and coding rules live in
 [docs/source-structure-discipline.md](docs/source-structure-discipline.md).
+The owner-local source path for Candidate and Baseline Promotion is in
+[docs/prototype-maturity.md](docs/prototype-maturity.md).
 The operator path for a baseline-approved Prototype entering Delivery is in
 [docs/prototype-delivery-packets.md](docs/prototype-delivery-packets.md).
 The separate source-only Workspace Intake path is in

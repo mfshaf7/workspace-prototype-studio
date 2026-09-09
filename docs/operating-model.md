@@ -31,8 +31,16 @@ retirement.
 
 `candidate` means the operator wants it shaped, but the design is not approved.
 
+Candidate state is entered only through the source-authoritative promotion
+path in [Prototype Maturity](prototype-maturity.md). An interview, checklist,
+or readiness result alone does not change the registry.
+
 `baseline-approved` means the design direction is accepted and implementation
 can proceed against the baseline.
+
+Baseline state is entered only when an approved maturity decision prepares the
+exact registry and design-baseline change on a review branch and merged-source
+readback later confirms it.
 
 Baseline approval does not mean the prototype has live backend authority. It
 means the operator shape, visual language, workflow states, and local proof are
