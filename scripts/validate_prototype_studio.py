@@ -18,6 +18,7 @@ from packages.prototype_delivery_packet.packet import (  # noqa: E402
     validate_packet_records,
 )
 from packages.prototype_landing.landing import validate_landing_records  # noqa: E402
+from packages.prototype_maturity.maturity import validate_maturity_records  # noqa: E402
 
 
 LIFECYCLES = {
@@ -399,6 +400,10 @@ def main() -> int:
         validate_landing_records(repo_root)
     except PacketError as error:
         errors.append(f"Prototype Landing records: {error.code}: {error}")
+    try:
+        validate_maturity_records(repo_root)
+    except PacketError as error:
+        errors.append(f"Prototype maturity records: {error.code}: {error}")
 
     if errors:
         for error in errors:
