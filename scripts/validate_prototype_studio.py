@@ -138,8 +138,6 @@ def validate_registry(repo_root: Path, errors: list[str]) -> dict[str, dict]:
 
         if "portfolio" in prototype and prototype.get("portfolio") not in PORTFOLIOS:
             errors.append(f"{label}: invalid portfolio {prototype.get('portfolio')!r}")
-        if prototype.get("lifecycle") != "exploring" and not prototype.get("portfolio"):
-            errors.append(f"{label}: portfolio is required after exploring")
         if prototype.get("lifecycle") not in LIFECYCLES:
             errors.append(f"{label}: invalid lifecycle {prototype.get('lifecycle')!r}")
         if prototype.get("visibility_tier") not in VISIBILITY_TIERS:
