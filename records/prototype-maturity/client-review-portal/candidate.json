@@ -1,0 +1,45 @@
+{
+  "accepted_values": {
+    "accepted-scope": [
+      "Client-safe status review",
+      "Bounded reviewer feedback"
+    ],
+    "boundary-clarifications": "Source remains repo://workspace-prototype-studio/prototypes/client-review-portal; maturity does not grant Delivery, runtime, Security, source-custody, or publication authority.",
+    "excluded-scope": [
+      "Production data access",
+      "Mutable delivery controls"
+    ],
+    "expected-proof": "A reviewer can inspect synthetic status and provide bounded feedback without mutable access. (demonstration)",
+    "open-issue-disposition": "No visible issue blocks this maturity decision.",
+    "prototype-objective": "Evaluate a client-safe review portal before baseline commitment.",
+    "target-user": "Designated client reviewer (client-reviewer)"
+  },
+  "artifact_type": "prototype-candidate-record",
+  "decision_ref": {
+    "digest": "sha256:9ec74061b8a4ac9eda2299f26b7dbd3334f79452c57c8873a4b31ebcd2ad2487",
+    "id": "prototype-maturity-decision:client-review-portal:1789103020853"
+  },
+  "expected_state": {
+    "lifecycle": "exploring",
+    "record_digest": "sha256:8c234aa56ca02cba9bcc6800df3092da235814cc01d1f819383ddc666d37e01d",
+    "source_revision": "31a73628b0bfd5af1133bc3b633921a18e6e3941"
+  },
+  "packet_ref": {
+    "digest": "sha256:ef00555529c270d6a83a2342f774439bb79983a66b13a8faf55eac8088f7a8e4",
+    "id": "prototype-maturity-packet:client-review-portal:1789103020853"
+  },
+  "promoted_at": "2026-09-11T05:03:42.678Z",
+  "promoted_by": "governance-operations-console",
+  "prototype_id": "prototype:client-review-portal",
+  "readiness_ref": {
+    "digest": "sha256:0fa2017a3f9ea996ebc9db11e1126dab7a95b9282fd91d8d57113f79f0a41b47",
+    "id": "prototype-maturity-readiness:client-review-portal:1789103020853"
+  },
+  "record_digest": "sha256:57c7d8beb7fce3405bf38db286e528cdf8034efa817e20763856182003c5c32c",
+  "record_id": "prototype-candidate:client-review-portal:1789103020853",
+  "request_ref": {
+    "digest": "sha256:7b5deab1b97da97d54ab30f6d426cd524eca4c64c2b92dba27b2f54b13c1772f",
+    "id": "prototype-maturity-request:client-review-portal:1789103020853"
+  },
+  "schema_version": 1
+}
