@@ -60,7 +60,7 @@ prototypes:
   name: Client Review Portal Concept
   objective: Exploring client-visible status surface with no approved client boundary
     yet.
-  lifecycle: exploring
+  lifecycle: candidate
   project_phase: incubating
   owner: Workspace Prototype Studio
   linked_records:
@@ -69,6 +69,11 @@ prototypes:
     system: prototype-studio
     level: record
     label: Prototype Landing source record
+  - role: candidate-record
+    ref: record://prototype-maturity/client-review-portal/candidate
+    system: prototype-studio
+    level: record
+    label: Prototype Candidate Promotion record
   visibility_tier: private-internal
   data_mode: synthetic
   mutation_boundary: none
