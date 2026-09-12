@@ -60,7 +60,7 @@ prototypes:
   name: Client Review Portal Concept
   objective: Exploring client-visible status surface with no approved client boundary
     yet.
-  lifecycle: candidate
+  lifecycle: baseline-approved
   project_phase: incubating
   owner: Workspace Prototype Studio
   linked_records:
@@ -74,6 +74,11 @@ prototypes:
     system: prototype-studio
     level: record
     label: Prototype Candidate Promotion record
+  - role: baseline-record
+    ref: record://design-baselines/client-review-portal-baseline-1132006
+    system: prototype-studio
+    level: record
+    label: Client Review Portal baseline
   visibility_tier: private-internal
   data_mode: synthetic
   mutation_boundary: none
@@ -84,3 +89,4 @@ prototypes:
     design_profile: docs/prototypes/client-review-portal/design-profile.md
     change_log: docs/prototypes/client-review-portal/change-log.md
     decision_log: docs/prototypes/client-review-portal/decision-log.md
+  design_baseline_ref: record://design-baselines/client-review-portal-baseline-1132006
