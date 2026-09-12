@@ -16,12 +16,14 @@ The emitter:
   evidence, and resolved source custody
 - requires an explicit operator decision reference
 - writes one deterministic packet under `records/delivery-packets/`
-- projects the Prototype registry from `baseline-approved` to `graduating`
+- links the packet to the `baseline-approved` Prototype without changing lifecycle
 - replays the same request without creating a duplicate
 - rejects stale, malformed, conflicting, custody-incomplete, or tampered input
 
 WGCF readiness, OOS Delivery application, Delivery-owned metadata, reciprocal
-receipts, and final Prototype graduation remain separate downstream work.
+receipts, and final Prototype graduation remain separate downstream work. An
+accepted Delivery target receipt is required before the Closure source action
+changes lifecycle to `graduating`; packet creation alone is not acceptance.
 
 ## Prepare A Request
 
@@ -87,7 +89,8 @@ The command returns a compact JSON acknowledgement with `emitted` or
 `replayed`, the packet ref, digest, and local path. A rejected command returns a
 bounded reason code and does not project a successful lifecycle change.
 
-Review and commit the packet and `prototypes.yaml` together. The source commit
+Review and commit the packet and `prototypes.yaml` together. The Prototype
+remains `baseline-approved` with a staged packet reference. The source commit
 bound by the packet intentionally precedes the commit that stores the packet;
 this avoids self-referential provenance.
 

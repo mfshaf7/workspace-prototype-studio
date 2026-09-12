@@ -46,9 +46,11 @@ Baseline approval does not mean the prototype has live backend authority. It
 means the operator shape, visual language, workflow states, and local proof are
 accepted enough for implementation or graduation work to proceed deliberately.
 
-`graduating` means a route-specific lifecycle transition is moving the work to
-Workspace Delivery ART, an existing repo, a new repo, or an admitted platform
-path. The source domain, validator, target domain, named decision authority,
+`graduating` means an accepted route-specific target action has moved the work
+into governed Delivery while Studio still holds source custody. Preparing a
+Prototype Delivery packet alone leaves lifecycle `baseline-approved`.
+Graduation of source into a durable owner is a separate later transition. The
+source domain, validator, target domain, named decision authority,
 orchestration, and target adapter retain their distinct authorities.
 
 `graduated` means this repo is no longer the source of truth.

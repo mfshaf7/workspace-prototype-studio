@@ -584,13 +584,18 @@ def _baseline_record(
 
 def _append_link(item: dict[str, Any], link: dict[str, str]) -> None:
     links = item.setdefault("linked_records", [])
-    if any(existing.get("role") == link["role"] for existing in links):
-        raise PacketError("source_target_conflict", f"Prototype already has a {link['role']}")
+    if any(existing.get("role") == link["role"] and existing.get("ref") == link["ref"] for existing in links):
+        raise PacketError("source_target_conflict", f"Prototype already links {link['ref']}")
     links.append(link)
 
 
 def _require_candidate_record(repo_root: Path, item: dict[str, Any], slug: str) -> None:
-    candidate_path = repo_root / MATURITY_RECORD_DIR / slug / "candidate.json"
+    candidate_ref = item.get("candidate_record_ref") or f"record://prototype-maturity/{slug}/candidate"
+    prefix = f"record://prototype-maturity/{slug}/"
+    stem = str(candidate_ref).removeprefix(prefix)
+    if not str(candidate_ref).startswith(prefix) or not re.fullmatch(r"candidate(?:-[0-9a-f]{12})?", stem):
+        raise PacketError("candidate_evidence_invalid", "active candidate record reference is invalid")
+    candidate_path = repo_root / MATURITY_RECORD_DIR / slug / f"{stem}.json"
     if not candidate_path.is_file():
         raise PacketError("candidate_evidence_missing", "Baseline Promotion requires a candidate record")
     candidate = load_json(candidate_path)
@@ -601,11 +606,10 @@ def _require_candidate_record(repo_root: Path, item: dict[str, Any], slug: str) 
         label="Prototype candidate record",
     )
     body = {key: value for key, value in candidate.items() if key != "record_digest"}
-    expected_ref = f"record://prototype-maturity/{slug}/candidate"
     links = [
         link
         for link in item.get("linked_records", [])
-        if link.get("role") == "candidate-record" and link.get("ref") == expected_ref
+        if link.get("role") == "candidate-record" and link.get("ref") == candidate_ref
     ]
     if (
         candidate.get("prototype_id") != f"prototype:{slug}"
@@ -633,12 +637,19 @@ def _prepare_writes(
 
     if transition == "candidate-promotion":
         candidate = _candidate_record(request, packet, readiness, decision)
-        candidate_path = repo_root / MATURITY_RECORD_DIR / slug / "candidate.json"
+        candidate_stem = (
+            f"candidate-{content_digest(request).removeprefix('sha256:')[:12]}"
+            if (repo_root / MATURITY_RECORD_DIR / slug / "candidate.json").exists()
+            else "candidate"
+        )
+        candidate_path = repo_root / MATURITY_RECORD_DIR / slug / f"{candidate_stem}.json"
+        candidate_ref = f"record://prototype-maturity/{slug}/{candidate_stem}"
+        updated_item["candidate_record_ref"] = candidate_ref
         _append_link(
             updated_item,
             {
                 "role": "candidate-record",
-                "ref": f"record://prototype-maturity/{slug}/candidate",
+                "ref": candidate_ref,
                 "system": "prototype-studio",
                 "level": "record",
                 "label": "Prototype Candidate Promotion record",
@@ -1023,9 +1034,9 @@ def validate_maturity_records(repo_root: Path) -> list[Path]:
     candidate_validator = _local_schema_validator(repo_root, "prototype-candidate-record.schema.json")
     validated: list[Path] = []
     used_keys: dict[str, str] = {}
-    candidate_decision_refs: dict[str, dict[str, str]] = {}
+    candidate_decision_refs: dict[str, set[tuple[str, str]]] = {}
 
-    for candidate_path in sorted((repo_root / MATURITY_RECORD_DIR).glob("*/candidate.json")):
+    for candidate_path in sorted((repo_root / MATURITY_RECORD_DIR).glob("*/candidate*.json")):
         candidate = load_json(candidate_path)
         validate_schema(
             candidate_validator,
@@ -1037,19 +1048,30 @@ def validate_maturity_records(repo_root: Path) -> list[Path]:
         if candidate["record_digest"] != content_digest(body):
             raise PacketError("source_record_invalid", f"{candidate_path} digest does not match")
         slug = _slug(candidate["prototype_id"])
-        if candidate_path != repo_root / MATURITY_RECORD_DIR / slug / "candidate.json":
+        if not re.fullmatch(r"candidate(?:-[0-9a-f]{12})?\.json", candidate_path.name) or candidate_path.parent.name != slug:
             raise PacketError("source_record_path_invalid", f"candidate record path differs for {slug}")
         item = registry_by_id.get(slug)
-        expected_ref = f"record://prototype-maturity/{slug}/candidate"
+        expected_ref = f"record://prototype-maturity/{slug}/{candidate_path.stem}"
         links = [
             link for link in (item or {}).get("linked_records", [])
             if link.get("role") == "candidate-record" and link.get("ref") == expected_ref
         ]
         if len(links) != 1:
             raise PacketError("source_record_unlinked", f"candidate record {slug} is not linked exactly once")
+        active_ref = (item or {}).get("candidate_record_ref")
         if (item or {}).get("lifecycle") == "exploring":
-            raise PacketError("source_record_invalid", f"candidate record {slug} has exploring registry state")
-        candidate_decision_refs[slug] = candidate["decision_ref"]
+            closure_ref = str((item or {}).get("closure_event_ref") or "")
+            prefix = f"record://prototype-closure/{slug}/history/prototype-closure:{slug}:"
+            if not closure_ref.startswith(prefix) or not closure_ref.removeprefix(prefix).isdigit():
+                raise PacketError("source_record_invalid", f"candidate record {slug} has exploring registry state without reopen")
+            sequence = int(closure_ref.removeprefix(prefix))
+            reopen_path = repo_root / "records" / "prototype-closure" / slug / "history" / f"{sequence:04d}.json"
+            if not reopen_path.is_file() or load_json(reopen_path).get("event_type") != "incubation-reopened":
+                raise PacketError("source_record_invalid", f"candidate record {slug} lacks a valid reopen event")
+            if active_ref == expected_ref:
+                raise PacketError("source_record_invalid", f"candidate record {slug} is still active after reopen")
+        decision_ref = candidate["decision_ref"]
+        candidate_decision_refs.setdefault(slug, set()).add((decision_ref["id"], decision_ref["digest"]))
         validated.append(candidate_path)
 
     history_refs: set[tuple[str, str]] = set()
@@ -1067,7 +1089,7 @@ def validate_maturity_records(repo_root: Path) -> list[Path]:
         history_refs.add((decision["decision_id"], decision["decision_digest"]))
         item = registry_by_id.get(slug) or {}
         if decision["transition"] == "candidate-promotion":
-            if candidate_decision_refs.get(slug) != _artifact_ref(decision):
+            if (decision["decision_id"], decision["decision_digest"]) not in candidate_decision_refs.get(slug, set()):
                 raise PacketError("source_history_invalid", f"candidate record {slug} does not bind its decision")
         else:
             baseline_id = _baseline_id(slug, decision)
@@ -1083,13 +1105,17 @@ def validate_maturity_records(repo_root: Path) -> list[Path]:
             }
             if any(not baseline.get(field) for field in required_fields):
                 raise PacketError("source_history_invalid", f"baseline record {baseline_id} is incomplete")
-            if item.get("design_baseline_ref") != f"record://design-baselines/{baseline_id}":
-                raise PacketError("source_history_invalid", f"baseline record {baseline_id} is not active")
+            expected_ref = f"record://design-baselines/{baseline_id}"
+            if not any(
+                link.get("role") == "baseline-record" and link.get("ref") == expected_ref
+                for link in item.get("linked_records", [])
+            ):
+                raise PacketError("source_history_invalid", f"baseline record {baseline_id} is not linked")
         validated.append(history_path)
     missing_history = [
         slug
-        for slug, decision_ref in candidate_decision_refs.items()
-        if (decision_ref["id"], decision_ref["digest"]) not in history_refs
+        for slug, decision_refs in candidate_decision_refs.items()
+        if not decision_refs.issubset(history_refs)
     ]
     if missing_history:
         raise PacketError(

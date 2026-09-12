@@ -80,5 +80,7 @@ The owner-local source path for Candidate and Baseline Promotion is in
 [docs/prototype-maturity.md](docs/prototype-maturity.md).
 The operator path for a baseline-approved Prototype entering Delivery is in
 [docs/prototype-delivery-packets.md](docs/prototype-delivery-packets.md).
+The source transitions for accepted Delivery application, source graduation,
+retirement, and reopen are in [docs/prototype-closure.md](docs/prototype-closure.md).
 The separate source-only Workspace Intake path is in
 [docs/prototype-intake-candidates.md](docs/prototype-intake-candidates.md).

@@ -17,6 +17,7 @@ from packages.prototype_delivery_packet.packet import (  # noqa: E402
     PacketError,
     validate_packet_records,
 )
+from packages.prototype_closure.closure import validate_closure_records  # noqa: E402
 from packages.prototype_landing.landing import validate_landing_records  # noqa: E402
 from packages.prototype_maturity.maturity import validate_maturity_records  # noqa: E402
 
@@ -206,11 +207,11 @@ def validate_registry(repo_root: Path, errors: list[str]) -> dict[str, dict]:
             "design_baseline_ref"
         ):
             errors.append(f"{label}: design_baseline_ref required for lifecycle {lifecycle}")
-        if lifecycle == "graduating":
+        if lifecycle in {"baseline-approved", "graduating"}:
             packet_ref = prototype.get("delivery_packet_ref")
-            if not packet_ref:
+            if lifecycle == "graduating" and not packet_ref:
                 errors.append(f"{label}: delivery_packet_ref required for lifecycle graduating")
-            elif not DELIVERY_PACKET_REF_RE.match(str(packet_ref)):
+            elif packet_ref and not DELIVERY_PACKET_REF_RE.match(str(packet_ref)):
                 errors.append(f"{label}: invalid delivery_packet_ref {packet_ref!r}")
             linked_packets = [
                 record
@@ -219,7 +220,7 @@ def validate_registry(repo_root: Path, errors: list[str]) -> dict[str, dict]:
                 and record.get("role") == "delivery-packet"
                 and record.get("ref") == packet_ref
             ]
-            if not linked_packets:
+            if packet_ref and not linked_packets:
                 errors.append(
                     f"{label}: linked_records must include active delivery_packet_ref"
                 )
@@ -402,6 +403,10 @@ def main() -> int:
         validate_maturity_records(repo_root)
     except PacketError as error:
         errors.append(f"Prototype maturity records: {error.code}: {error}")
+    try:
+        validate_closure_records(repo_root)
+    except PacketError as error:
+        errors.append(f"Prototype Closure records: {error.code}: {error}")
 
     if errors:
         for error in errors:

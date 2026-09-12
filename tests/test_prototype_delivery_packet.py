@@ -165,7 +165,7 @@ class PrototypeDeliveryPacketTest(unittest.TestCase):
 
         registry = yaml.safe_load((self.root / "prototypes.yaml").read_text())
         prototype = registry["prototypes"][0]
-        self.assertEqual("graduating", prototype["lifecycle"])
+        self.assertEqual("baseline-approved", prototype["lifecycle"])
         self.assertEqual(first.packet_ref, prototype["delivery_packet_ref"])
         self.assertEqual(
             [first.packet_ref],
@@ -175,6 +175,14 @@ class PrototypeDeliveryPacketTest(unittest.TestCase):
                 if record["role"] == "delivery-packet"
             ],
         )
+
+    def test_packet_remains_valid_after_later_lifecycle_change(self) -> None:
+        result = self._emit()
+        registry = yaml.safe_load((self.root / "prototypes.yaml").read_text())
+        registry["prototypes"][0]["lifecycle"] = "graduating"
+        self._write_yaml(self.root / "prototypes.yaml", registry)
+
+        self.assertEqual(result.packet_ref, validate_packet_file(self.root, result.packet_path)["packet_ref"])
 
     def test_packet_contains_complete_delivery_evidence_without_target_owned_fields(self) -> None:
         result = self._emit()

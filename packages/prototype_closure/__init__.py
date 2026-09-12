@@ -1,0 +1,1 @@
+"""Prototype Closure source authority."""

@@ -82,6 +82,10 @@ requires the original lifecycle and record digest to remain unchanged.
 The source result and readback paths must stay outside this repository. They
 are workflow evidence for OOS custody, not canonical Prototype records.
 
+After a verified Closure reopen, prior candidate and baseline records remain
+historical. A new Candidate Promotion writes a distinct active candidate
+record and may proceed to a fresh baseline without overwriting the old cycle.
+
 ## Recovery And Validation
 
 Identical replay returns a replay result without another mutation. Conflicting
