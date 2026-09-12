@@ -18,6 +18,7 @@ from packages.prototype_maturity.maturity import (
     validate_contract_bundle,
     validate_maturity_records,
 )
+from scripts.validate_prototype_studio import validate_registry
 
 
 SOURCE_ROOT = Path(__file__).resolve().parents[1]
@@ -87,7 +88,6 @@ class PrototypeMaturityTest(unittest.TestCase):
                         "id": "sample",
                         "name": "Sample Prototype",
                         "objective": "Prove a bounded workflow.",
-                        "portfolio": "experiment",
                         "lifecycle": "exploring",
                         "project_phase": "incubating",
                         "owner": "Workspace Prototype Studio",
@@ -300,6 +300,7 @@ class PrototypeMaturityTest(unittest.TestCase):
         item = registry["prototypes"][0]
         self.assertEqual(result.status, "prepared")
         self.assertEqual(item["lifecycle"], "candidate")
+        self.assertNotIn("portfolio", item)
         self.assertEqual(item["project_phase"], "incubating")
         self.assertEqual(item["mutation_boundary"], "none")
         self.assertTrue((self.root / "records/prototype-maturity/sample/candidate.json").is_file())
@@ -311,6 +312,9 @@ class PrototypeMaturityTest(unittest.TestCase):
                 "records/prototype-maturity/sample/history/prototype-maturity-decision-sample-1.json",
             },
         )
+        errors: list[str] = []
+        validate_registry(self.root, errors)
+        self.assertEqual([], errors)
 
     def test_baseline_promotion_prepares_approved_baseline_without_cross_domain_mutation(self) -> None:
         self.apply(self.artifacts(), "candidate.json")
