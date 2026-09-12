@@ -1,0 +1,32 @@
+schema_version: 1
+prototype_id: client-review-portal
+baseline_id: client-review-portal-baseline-1132006
+approved_on: '2026-09-12'
+approved_by: governance-operations-console
+decision: approved
+title: Client Review Portal baseline
+statement: Client Review Portal Concept is accepted as a Prototype Studio baseline
+  for synthetic client-review workflow and interface proof only.
+accepted_summary: Client-safe status review; Bounded reviewer feedback
+excluded_summary: Production data access; Mutable delivery controls
+missing_evidence_disposition: The committed Landing source, current Prototype brief,
+  and merged Candidate record are accepted for this baseline packet.
+issue_and_risk_disposition: No visible issue blocks this baseline decision; Delivery,
+  runtime, Security, source custody, and publication remain outside this baseline.
+source_refs:
+- record://prototype-landings/client-review-portal
+- repo://workspace-prototype-studio/docs/prototypes/client-review-portal
+- record://prototype-maturity/client-review-portal/candidate
+art_refs: []
+security_review_refs: []
+evidence_refs:
+- record://prototype-landings/client-review-portal
+- record://prototype-maturity/client-review-portal/candidate
+- repo://workspace-prototype-studio/docs/prototypes/client-review-portal
+constraints:
+- Production data access; Mutable delivery controls
+- The committed Landing source, current Prototype brief, and merged Candidate record
+  are accepted for this baseline packet.
+- No visible issue blocks this baseline decision; Delivery, runtime, Security, source
+  custody, and publication remain outside this baseline.
+- Baseline approval is local Prototype maturity only and grants no cross-domain authority.
