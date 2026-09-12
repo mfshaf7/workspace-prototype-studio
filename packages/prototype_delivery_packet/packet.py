@@ -256,7 +256,7 @@ def _prepare_registry_projection(
 
     lifecycle = prototype.get("lifecycle")
     active_ref = prototype.get("delivery_packet_ref")
-    if lifecycle == "graduating" and active_ref == packet["packet_ref"]:
+    if lifecycle == "baseline-approved" and active_ref == packet["packet_ref"]:
         return registry_path, registry, False
     if lifecycle != "baseline-approved":
         raise PacketError(
@@ -269,7 +269,6 @@ def _prepare_registry_projection(
             "current prototype already points to another Delivery packet",
         )
 
-    prototype["lifecycle"] = "graduating"
     prototype["delivery_packet_ref"] = packet["packet_ref"]
     linked_records = prototype.setdefault("linked_records", [])
     if not any(
@@ -374,20 +373,14 @@ def _validate_packet_source(repo_root: Path, packet: dict[str, Any]) -> None:
 
 
 def _validate_packet_bindings(repo_root: Path, packet: dict[str, Any]) -> None:
-    registry = load_yaml(repo_root / "prototypes.yaml")
     source = packet["content"]["source"]
+    registry = load_yaml_at_revision(repo_root, source["record_version"], Path("prototypes.yaml"))
     prototype = _find_prototype(registry, source["prototype_id"])
-    if prototype.get("lifecycle") != "graduating":
+    if prototype.get("lifecycle") != "baseline-approved":
         raise PacketError(
             "source_projection_mismatch",
-            "an active Prototype Delivery packet requires lifecycle graduating",
+            "the packet's bound source revision is not baseline-approved",
         )
-    if prototype.get("delivery_packet_ref") != packet["packet_ref"]:
-        raise PacketError(
-            "source_projection_mismatch",
-            "prototype delivery_packet_ref does not point to this packet",
-        )
-
     expected_values = {
         "owner": source["owner"],
         "design_baseline_ref": packet["content"]["baseline"]["record_ref"],
@@ -397,7 +390,7 @@ def _validate_packet_bindings(repo_root: Path, packet: dict[str, Any]) -> None:
         if prototype.get(key) != expected:
             raise PacketError(
                 "source_projection_mismatch",
-                f"prototype {key} does not match packet content",
+                f"bound prototype {key} does not match packet content",
             )
 
     baseline_ref = packet["content"]["baseline"]["record_ref"]

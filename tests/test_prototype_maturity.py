@@ -11,6 +11,7 @@ from pathlib import Path
 import yaml
 
 from packages.prototype_delivery_packet.contract import PacketError, content_digest
+from packages.prototype_closure.closure import prepare_transition, validate_closure_records
 from packages.prototype_maturity.maturity import (
     apply_maturity,
     current_state,
@@ -292,6 +293,85 @@ class PrototypeMaturityTest(unittest.TestCase):
 
     def test_contract_bundle_is_exact_and_valid(self) -> None:
         validate_contract_bundle(self.root)
+
+    def test_reopened_prototype_can_start_a_fresh_candidate_cycle(self) -> None:
+        self.apply(self.artifacts(), "initial-candidate.json")
+        self.git("add", ".")
+        self.git("commit", "-m", "initial candidate")
+
+        def closure_request(action: str, **fields: str) -> dict:
+            request = {
+                "schema_version": 2,
+                "artifact_type": "prototype-closure-request",
+                "request_id": f"closure-{action}",
+                "prototype_id": "sample",
+                "action": action,
+                "expected_lifecycle": current_state(self.root, "prototype:sample")["expected_state"]["lifecycle"],
+                "expected_source_revision": self.git("rev-parse", "HEAD"),
+                "operator_id": "operator:workspace-owner",
+                "correlation_id": "reopen-test",
+                "idempotency_key": f"reopen-test-{action}",
+            }
+            request.update(fields)
+            return request
+
+        retire = closure_request(
+            "retire-incubation",
+            retirement_reason="Pause this incubation",
+            retention_plan_ref="plan://retention/sample",
+            runtime_disposition_plan_ref="plan://runtime/sample",
+        )
+        prepare_transition(
+            self.root,
+            retire,
+            {
+                "artifact_type": "prototype-closure-resolved-authority",
+                "issuer": "operator-orchestration-service",
+                "request_digest": content_digest(retire),
+                "retention_plan_ref": retire["retention_plan_ref"],
+                "runtime_disposition_plan_ref": retire["runtime_disposition_plan_ref"],
+                "runtime_disposition_proof_ref": "proof://runtime/absent",
+            },
+            recorded_at=NOW,
+        )
+        self.git("add", ".")
+        self.git("commit", "-m", "retire incubation")
+        retirement_ref = (yaml.safe_load((self.root / "prototypes.yaml").read_text())["prototypes"][0]["retirement_ref"])
+        reopen = closure_request(
+            "reopen-incubation",
+            prior_retirement_receipt_ref="receipt://closure/retirement",
+        )
+        prepare_transition(
+            self.root,
+            reopen,
+            {
+                "artifact_type": "prototype-closure-resolved-authority",
+                "issuer": "operator-orchestration-service",
+                "request_digest": content_digest(reopen),
+                "prior_retirement_receipt_ref": reopen["prior_retirement_receipt_ref"],
+                "prior_retirement_event_ref": retirement_ref,
+                "retained_source_readback_ref": "readback://source/sample",
+            },
+            recorded_at=NOW,
+        )
+        self.git("add", ".")
+        self.git("commit", "-m", "reopen incubation")
+        validate_maturity_records(self.root)
+        self.apply(self.artifacts(sequence=3), "fresh-candidate.json")
+        item = yaml.safe_load((self.root / "prototypes.yaml").read_text())["prototypes"][0]
+        self.assertEqual("candidate", item["lifecycle"])
+        self.assertIn("candidate-", item["candidate_record_ref"])
+        self.assertEqual(2, len(validate_closure_records(self.root)))
+        validate_maturity_records(self.root)
+        self.git("add", ".")
+        self.git("commit", "-m", "fresh candidate")
+        self.apply(self.artifacts("baseline-promotion", sequence=4), "fresh-baseline.json")
+        self.assertEqual(
+            "baseline-approved",
+            yaml.safe_load((self.root / "prototypes.yaml").read_text())["prototypes"][0]["lifecycle"],
+        )
+        validate_maturity_records(self.root)
+        validate_closure_records(self.root)
 
     def test_candidate_promotion_prepares_only_allowed_source(self) -> None:
         artifacts = self.artifacts()
