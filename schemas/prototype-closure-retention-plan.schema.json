@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Prototype Closure Retention Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "artifact_type", "prototype_id", "basis_revision",
+    "basis_lifecycle", "basis_source_custody", "source_tree_path", "source_tree_oid",
+    "retained_files", "retention_mode",
+    "operator_id", "retirement_reason", "created_at"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "artifact_type": {"const": "prototype-closure-retention-plan"},
+    "prototype_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "basis_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "basis_lifecycle": {"enum": ["exploring", "candidate", "baseline-approved", "graduating"]},
+    "basis_source_custody": {"enum": ["incubation-repo", "dedicated-owner-repo", "shared-owner-repo"]},
+    "source_tree_path": {"type": ["string", "null"], "pattern": "^prototypes/[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "source_tree_oid": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+    "retained_files": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "oid"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "oid": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+        }
+      }
+    },
+    "retention_mode": {"const": "retain-studio-source-and-history"},
+    "operator_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "retirement_reason": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

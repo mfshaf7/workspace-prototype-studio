@@ -48,6 +48,43 @@ Delivery item and durable source, and requires exact runtime disposition proof.
 restoring a previous runtime. Prior candidate and baseline records remain
 historical; a new promotion creates a new active candidate record and baseline.
 
+## Studio Owner Evidence
+
+Before a retirement request, prepare a reviewable retention plan on a clean
+Studio source branch:
+
+```sh
+python3 scripts/prototype_closure.py --repo-root . prepare-retention \
+  --prototype-id <id> --operator-id <operator> --reason <retirement-reason>
+```
+
+The prototype must have committed source to retain. The command writes a content-addressed plan under
+`records/prototype-closure/<id>/retention-plans/`. Review and merge it before
+using its returned `record://` reference in a retirement request. It commits
+the decision to retain the exact Git objects for the declared source files and
+prototype tree, plus Studio history; it does not revoke runtime
+resources or retire an accepted Delivery item. WGCF and OOS must read the plan
+from the exact trusted Studio main revision, not from a caller-supplied body.
+
+The owner readback command supports both Studio fields:
+
+```sh
+python3 scripts/prototype_closure.py --repo-root . owner-readback \
+  --field retention_plan_ref --prototype-id <id> \
+  --source-revision <trusted-main-commit> --ref <retention-plan-ref> \
+  --operator-id <operator> --reason <retirement-reason>
+python3 scripts/prototype_closure.py --repo-root . owner-readback \
+  --field retained_source_readback_ref --prototype-id <id> \
+  --source-revision <trusted-main-commit>
+```
+
+Retained-source readback is available only after a committed retirement event
+and only while the declared source files and prototype tree match the exact
+objects recorded in the plan. Changing their bytes invalidates the proof.
+Both readbacks fail if the trusted main revision differs from the requested
+revision. The normal Closure runtime remains inactive until WGCF, OOS, and
+Platform consume their respective owner proofs.
+
 The `resolved-authority` JSON is a source-preparation interface for OOS, not a
 self-authenticating receipt. Repository review and OOS receipt reconciliation
 must verify its producer and referenced evidence before merge and completion.
