@@ -66,6 +66,46 @@ def _committed_item(repo_root: Path, revision: str, prototype_id: str) -> dict[s
     return _registry_item(registry, prototype_id)
 
 
+def _safe_source_path(raw_path: str) -> str:
+    if not isinstance(raw_path, str):
+        raise PacketError("retained_source_invalid", "retained source path is invalid")
+    path = PurePosixPath(raw_path)
+    if path.is_absolute() or ".." in path.parts or not path.parts:
+        raise PacketError("retained_source_invalid", "retained source path escapes Studio")
+    return path.as_posix()
+
+
+def _object_oid(repo_root: Path, revision: str, path: str) -> str:
+    oid = run_git(repo_root, "rev-parse", "--verify", f"{revision}:{path}")
+    if not COMMIT.fullmatch(oid):
+        raise PacketError("retained_source_invalid", "Studio source object id is invalid")
+    return oid
+
+
+def _retained_files(repo_root: Path, revision: str, item: dict[str, Any]) -> list[dict[str, str]]:
+    paths = item.get("paths")
+    if not isinstance(paths, dict):
+        raise PacketError("retained_source_invalid", "Studio registry source paths are invalid")
+    retained = []
+    for path in sorted({_safe_source_path(raw_path) for raw_path in paths.values()}):
+        oid = _object_oid(repo_root, revision, path)
+        if run_git(repo_root, "cat-file", "-t", oid) != "blob":
+            raise PacketError("retained_source_invalid", "declared Studio source path is not a file")
+        retained.append({"path": path, "oid": oid})
+    return retained
+
+
+def _verify_retained_objects(repo_root: Path, revision: str, item: dict[str, Any], plan: dict[str, Any]) -> None:
+    if _retained_files(repo_root, revision, item) != plan["retained_files"]:
+        raise PacketError("retained_source_changed", "declared Studio files differ from the retention plan")
+    source_tree = f"prototypes/{plan['prototype_id']}"
+    tree_present = bool(run_git(repo_root, "ls-tree", "-r", "--name-only", revision, "--", source_tree))
+    if tree_present != (plan["source_tree_path"] is not None):
+        raise PacketError("retained_source_changed", "prototype source tree presence changed")
+    if tree_present and _object_oid(repo_root, revision, source_tree) != plan["source_tree_oid"]:
+        raise PacketError("retained_source_changed", "prototype source tree differs from the retention plan")
+
+
 def validate_retention_plan_records(repo_root: Path) -> list[Path]:
     repo_root = repo_root.resolve()
     validator = _plan_validator(repo_root)
@@ -81,6 +121,7 @@ def validate_retention_plan_records(repo_root: Path) -> list[Path]:
         if (
             plan["prototype_id"] != relative.parts[0]
             or plan["source_tree_path"] not in {None, f"prototypes/{relative.parts[0]}"}
+            or (plan["source_tree_path"] is None) != (plan["source_tree_oid"] is None)
             or path.stem != content_digest(plan).removeprefix("sha256:")
             or not plan["operator_id"].strip()
             or not plan["retirement_reason"].strip()
@@ -114,6 +155,9 @@ def prepare_retention_plan(
             raise PacketError("lifecycle_invalid", "only active incubation can prepare retirement")
         source_tree = f"prototypes/{prototype_id}"
         has_source_tree = bool(run_git(repo_root, "ls-tree", "-r", "--name-only", revision, "--", source_tree))
+        retained_files = _retained_files(repo_root, revision, item)
+        if not retained_files and not has_source_tree:
+            raise PacketError("retained_source_unavailable", "prototype has no committed source to retain")
         plan = {
             "schema_version": 1,
             "artifact_type": "prototype-closure-retention-plan",
@@ -122,6 +166,8 @@ def prepare_retention_plan(
             "basis_lifecycle": item["lifecycle"],
             "basis_source_custody": _custody(item),
             "source_tree_path": source_tree if has_source_tree else None,
+            "source_tree_oid": _object_oid(repo_root, revision, source_tree) if has_source_tree else None,
+            "retained_files": retained_files,
             "retention_mode": "retain-studio-source-and-history",
             "operator_id": operator_id.strip(),
             "retirement_reason": retirement_reason.strip(),
@@ -155,6 +201,7 @@ def read_retention_plan(
     if (
         plan["prototype_id"] != prototype_id
         or plan["source_tree_path"] not in {None, f"prototypes/{prototype_id}"}
+        or (plan["source_tree_path"] is None) != (plan["source_tree_oid"] is None)
         or content_digest(plan) != f"sha256:{digest_hex}"
     ):
         raise PacketError("retention_plan_mismatch", "committed retention plan differs from its reference")
@@ -175,10 +222,7 @@ def read_retention_plan(
         or _custody(current) != plan["basis_source_custody"]
     ):
         raise PacketError("retention_plan_stale", "retention plan no longer matches committed Studio state")
-    if plan["source_tree_path"] and not run_git(
-        repo_root, "ls-tree", "-r", "--name-only", revision, "--", plan["source_tree_path"]
-    ):
-        raise PacketError("retention_plan_stale", "planned prototype source tree is missing")
+    _verify_retained_objects(repo_root, revision, current, plan)
     return {
         "ref": ref,
         "owner_ref": "workspace-prototype-studio",
@@ -211,16 +255,6 @@ def read_retained_source(
     item = _committed_item(repo_root, revision, prototype_id)
     if item["lifecycle"] != "retired" or _custody(item) != "incubation-repo":
         raise PacketError("retained_source_unavailable", "Studio source is not retained for reopen")
-    paths = item.get("paths")
-    if not isinstance(paths, dict) or not paths:
-        raise PacketError("retained_source_unavailable", "Studio registry has no retained source paths")
-    for raw_path in paths.values():
-        if not isinstance(raw_path, str):
-            raise PacketError("retained_source_invalid", "retained source path is invalid")
-        path = PurePosixPath(raw_path)
-        if path.is_absolute() or ".." in path.parts or not path.parts:
-            raise PacketError("retained_source_invalid", "retained source path escapes Studio")
-        run_git(repo_root, "cat-file", "-e", f"{revision}:{path.as_posix()}")
     retirement_ref = item.get("retirement_ref")
     if not isinstance(retirement_ref, str) or not retirement_ref.startswith(
         f"record://prototype-closure/{prototype_id}/history/prototype-closure:{prototype_id}:"
@@ -250,13 +284,11 @@ def read_retained_source(
     if (
         plan["prototype_id"] != prototype_id
         or plan["source_tree_path"] not in {None, f"prototypes/{prototype_id}"}
+        or (plan["source_tree_path"] is None) != (plan["source_tree_oid"] is None)
         or content_digest(plan) != f"sha256:{plan_match.group(2)}"
     ):
         raise PacketError("retention_plan_mismatch", "committed retirement plan digest differs")
-    if plan["source_tree_path"] and not run_git(
-        repo_root, "ls-tree", "-r", "--name-only", revision, "--", plan["source_tree_path"]
-    ):
-        raise PacketError("retained_source_unavailable", "planned prototype source tree is missing")
+    _verify_retained_objects(repo_root, revision, item, plan)
     return {
         "ref": ref,
         "owner_ref": "workspace-prototype-studio",

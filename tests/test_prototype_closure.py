@@ -310,11 +310,20 @@ class PrototypeClosureTest(unittest.TestCase):
             validate_closure_records(self.root)
 
     def test_retention_plan_is_committed_owner_proof(self) -> None:
+        registry = load_yaml(self.root / "prototypes.yaml")
+        registry["prototypes"][0]["paths"] = {"brief": "docs/prototypes/sample/brief.md"}
+        self._write_registry(registry)
+        brief = self.root / "docs/prototypes/sample/brief.md"
+        brief.parent.mkdir(parents=True)
+        brief.write_text("# Sample\n", encoding="utf-8")
+        self.git("add", ".")
+        self.git("commit", "-m", "Record source brief")
         path, ref, plan = prepare_retention_plan(
             self.root, "sample", "operator:test", "Stop local incubation", created_at=NOW,
         )
         self.assertEqual("retain-studio-source-and-history", plan["retention_mode"])
         self.assertIsNone(plan["source_tree_path"])
+        self.assertEqual(["docs/prototypes/sample/brief.md"], [file["path"] for file in plan["retained_files"]])
         self.assertTrue(path.is_file())
         self.assertEqual([path], validate_retention_plan_records(self.root))
         with self.assertRaisesRegex(PacketError, "clean source"):
@@ -389,6 +398,43 @@ class PrototypeClosureTest(unittest.TestCase):
         self.git("update-ref", "refs/remotes/origin/main", missing_revision)
         with self.assertRaises(PacketError):
             read_retained_source(self.root, "sample", missing_revision)
+
+    def test_retained_source_rejects_modified_committed_bytes(self) -> None:
+        registry = load_yaml(self.root / "prototypes.yaml")
+        registry["prototypes"][0]["paths"] = {"brief": "docs/prototypes/sample/brief.md"}
+        self._write_registry(registry)
+        brief = self.root / "docs/prototypes/sample/brief.md"
+        brief.parent.mkdir(parents=True)
+        brief.write_text("# Original\n", encoding="utf-8")
+        self.git("add", ".")
+        self.git("commit", "-m", "Record source brief")
+        _, ref, _ = prepare_retention_plan(
+            self.root, "sample", "operator:test", "Stop local incubation", created_at=NOW,
+        )
+        self.git("add", ".")
+        self.git("commit", "-m", "Record retention plan")
+        request = self.request(
+            "retire-incubation", retirement_reason="Stop local incubation",
+            retention_plan_ref=ref, runtime_disposition_plan_ref="record://platform/sample-plan",
+        )
+        resolved = self.resolved(
+            request, retention_plan_ref=ref,
+            runtime_disposition_plan_ref="record://platform/sample-plan",
+            runtime_disposition_proof_ref="record://platform/sample-proof",
+        )
+        prepare_transition(self.root, request, resolved, recorded_at=NOW)
+        self.git("add", ".")
+        self.git("commit", "-m", "Retire incubation")
+        retired_revision = self.git("rev-parse", "HEAD")
+        self.git("update-ref", "refs/remotes/origin/main", retired_revision)
+        read_retained_source(self.root, "sample", retired_revision)
+        brief.write_text("# Modified\n", encoding="utf-8")
+        self.git("add", ".")
+        self.git("commit", "-m", "Modify retained brief")
+        changed_revision = self.git("rev-parse", "HEAD")
+        self.git("update-ref", "refs/remotes/origin/main", changed_revision)
+        with self.assertRaisesRegex(PacketError, "differ from the retention plan"):
+            read_retained_source(self.root, "sample", changed_revision)
 
 
 if __name__ == "__main__":
