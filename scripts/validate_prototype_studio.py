@@ -18,6 +18,7 @@ from packages.prototype_delivery_packet.packet import (  # noqa: E402
     validate_packet_records,
 )
 from packages.prototype_closure.closure import validate_closure_records  # noqa: E402
+from packages.prototype_closure.owner_evidence import validate_retention_plan_records  # noqa: E402
 from packages.prototype_landing.landing import validate_landing_records  # noqa: E402
 from packages.prototype_maturity.maturity import validate_maturity_records  # noqa: E402
 
@@ -405,6 +406,7 @@ def main() -> int:
         errors.append(f"Prototype maturity records: {error.code}: {error}")
     try:
         validate_closure_records(repo_root)
+        validate_retention_plan_records(repo_root)
     except PacketError as error:
         errors.append(f"Prototype Closure records: {error.code}: {error}")
 
