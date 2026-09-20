@@ -48,7 +48,7 @@ def validate_contract_bundle(repo_root: Path) -> None:
     manifest = load_json(bundle / "manifest.json")
     if manifest.get("authority_repo") != "workspace-governance":
         raise PacketError("contract_bundle_invalid", "Closure authority repo is invalid")
-    if manifest.get("authority_commit") != "eb9ec14e9191535a358bc80418aa0a14ad8b8609":
+    if manifest.get("authority_commit") != "a35bcdc9514716d1b698d05ca9d288aca6490aeb":
         raise PacketError("contract_bundle_invalid", "Closure authority revision is invalid")
     security_review = manifest.get("security_review") or {}
     if security_review.get("decision") != "approved-with-findings" or not security_review.get("merge_commit"):
@@ -164,15 +164,16 @@ def _event_for(
     if action == "apply-delivery":
         if not item.get("delivery_packet_ref") or not item.get("design_baseline_ref"):
             raise PacketError("delivery_packet_missing", "Delivery application requires a staged packet and baseline")
+        if _resolved_ref(resolved, "accepted_delivery_target_receipt_ref") != request["accepted_delivery_target_receipt_ref"]:
+            raise PacketError("authority_mismatch", "accepted Delivery receipt differs from requested ingress receipt")
+        if _resolved_ref(resolved, "target_delivery_ref") != request["target_delivery_ref"]:
+            raise PacketError("authority_mismatch", "accepted Delivery target differs from requested ART target")
         event.update(
             observed_lifecycle="graduating",
             observed_source_custody="incubation-repo",
             accepted_baseline_receipt_ref=request["accepted_baseline_receipt_ref"],
-            accepted_delivery_target_receipt_ref=_resolved_ref(resolved, "accepted_delivery_target_receipt_ref"),
+            accepted_delivery_target_receipt_ref=request["accepted_delivery_target_receipt_ref"],
         )
-        _resolved_ref(resolved, "target_delivery_ref")
-        if request.get("target_delivery_ref") and resolved["target_delivery_ref"] != request["target_delivery_ref"]:
-            raise PacketError("authority_mismatch", "accepted Delivery target differs from requested target")
     elif action == "graduate-source":
         if item.get("project_phase") != "delivery-governed":
             raise PacketError("project_phase_invalid", "source graduation requires Delivery-governed phase")
@@ -312,6 +313,10 @@ def prepare_transition(
             _history(repo_root, existing["prototype_id"])
             if existing.get("request_digest") != content_digest(request):
                 raise PacketError("idempotency_conflict", "idempotency key is bound to a different request")
+            if request["action"] == "apply-delivery":
+                for key in ("accepted_delivery_target_receipt_ref", "target_delivery_ref"):
+                    if resolved.get(key) != request[key]:
+                        raise PacketError("idempotency_conflict", f"reconciled {key} changed under the same key")
             for key in (
                 "accepted_delivery_target_receipt_ref", "durable_owner_acceptance_ref",
                 "source_transfer_receipt_ref", "runtime_disposition_proof_ref", "retained_source_readback_ref",

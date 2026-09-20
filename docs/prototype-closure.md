@@ -10,10 +10,13 @@ incubation runtime disposition. Studio does not grant any of those authorities.
 
 1. Confirm the active registry state and the exact Studio HEAD. A staged
    Delivery packet leaves lifecycle `baseline-approved`; it is not an accepted
-   Delivery target.
-2. OOS accepts the request and reconciles action-specific target, owner,
-   runtime, or retained-source evidence. Its resolved authority input must bind
-   the request digest. A reference string alone is not proof of acceptance.
+   Delivery target. For `apply-delivery`, first apply the committed packet
+   through OOS Prototype-to-Delivery ingress and read back the accepted receipt
+   and exact ART Epic target. Existing-item attachment is not yet admitted.
+2. OOS accepts the Closure request, including that ingress receipt and target,
+   and reconciles action-specific owner, runtime, or retained-source evidence.
+   Its resolved authority input must bind the request digest. A reference
+   string alone is not proof of acceptance.
 3. On a clean non-default review branch, prepare the Studio source event:
 
    ```sh

@@ -80,6 +80,12 @@ class PrototypeClosureTest(unittest.TestCase):
             "correlation_id": "test-closure",
             "idempotency_key": f"closure-{action}-{self.git('rev-parse', '--short', 'HEAD')}",
         }
+        if action == "apply-delivery":
+            request.update(
+                target_kind="new-delivery-epic",
+                target_delivery_ref="openproject://work_packages/1200",
+                accepted_delivery_target_receipt_ref="receipt://delivery/sample",
+            )
         request.update(extra)
         return request
 
@@ -218,6 +224,24 @@ class PrototypeClosureTest(unittest.TestCase):
             prepare_transition(self.root, request, resolved)
         self.assertEqual("baseline-approved", self.item()["lifecycle"])
         self.assertEqual([], validate_closure_records(self.root))
+        missing_receipt = copy.deepcopy(request)
+        del missing_receipt["accepted_delivery_target_receipt_ref"]
+        with self.assertRaisesRegex(PacketError, "accepted_delivery_target_receipt_ref"):
+            prepare_transition(self.root, missing_receipt, self.resolved(missing_receipt))
+        mismatched_receipt = self.resolved(
+            request,
+            accepted_delivery_target_receipt_ref="receipt://delivery/other",
+            target_delivery_ref=request["target_delivery_ref"],
+        )
+        with self.assertRaisesRegex(PacketError, "accepted Delivery receipt differs"):
+            prepare_transition(self.root, request, mismatched_receipt)
+        mismatched_target = self.resolved(
+            request,
+            accepted_delivery_target_receipt_ref=request["accepted_delivery_target_receipt_ref"],
+            target_delivery_ref="openproject://work_packages/other",
+        )
+        with self.assertRaisesRegex(PacketError, "accepted Delivery target differs"):
+            prepare_transition(self.root, request, mismatched_target)
         stale = copy.deepcopy(request)
         stale["expected_source_revision"] = "0" * 40
         with self.assertRaisesRegex(PacketError, "current source HEAD"):
@@ -249,6 +273,11 @@ class PrototypeClosureTest(unittest.TestCase):
         changed["accepted_delivery_target_receipt_ref"] = "receipt://delivery/other"
         with self.assertRaises(PacketError) as context:
             prepare_transition(self.root, request, changed)
+        self.assertEqual("idempotency_conflict", context.exception.code)
+        changed_target = copy.deepcopy(resolved)
+        changed_target["target_delivery_ref"] = "openproject://work_packages/other"
+        with self.assertRaises(PacketError) as context:
+            prepare_transition(self.root, request, changed_target)
         self.assertEqual("idempotency_conflict", context.exception.code)
 
     def test_default_branch_and_tampered_history_are_denied(self) -> None:
