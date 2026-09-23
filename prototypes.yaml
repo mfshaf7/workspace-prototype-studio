@@ -60,8 +60,8 @@ prototypes:
   name: Client Review Portal Concept
   objective: Exploring client-visible status surface with no approved client boundary
     yet.
-  lifecycle: baseline-approved
-  project_phase: incubating
+  lifecycle: graduating
+  project_phase: delivery-governed
   owner: Workspace Prototype Studio
   linked_records:
   - role: landing-record
@@ -96,3 +96,7 @@ prototypes:
     decision_log: docs/prototypes/client-review-portal/decision-log.md
   design_baseline_ref: record://design-baselines/client-review-portal-baseline-1132006
   delivery_packet_ref: record://delivery-packets/client-review-portal-36f817bad29272a68253576def8e852da6353876cb873f6cfab409dba65d39c7
+  source_custody: incubation-repo
+  closure_event_ref: record://prototype-closure/client-review-portal/history/prototype-closure:client-review-portal:0001
+  delivery_target_ref: openproject://work_packages/1152
+  accepted_delivery_target_receipt_ref: oos://receipts/prototype-delivery-application/8b52379809a6047e8e817314760a514b0793b107d15b10322bc98ba8ccd8656f
