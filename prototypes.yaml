@@ -79,6 +79,11 @@ prototypes:
     system: prototype-studio
     level: record
     label: Client Review Portal baseline
+  - role: delivery-packet
+    ref: record://delivery-packets/client-review-portal-36f817bad29272a68253576def8e852da6353876cb873f6cfab409dba65d39c7
+    system: prototype-studio
+    level: record
+    label: Prototype Delivery packet
   visibility_tier: private-internal
   data_mode: synthetic
   mutation_boundary: none
@@ -90,3 +95,4 @@ prototypes:
     change_log: docs/prototypes/client-review-portal/change-log.md
     decision_log: docs/prototypes/client-review-portal/decision-log.md
   design_baseline_ref: record://design-baselines/client-review-portal-baseline-1132006
+  delivery_packet_ref: record://delivery-packets/client-review-portal-36f817bad29272a68253576def8e852da6353876cb873f6cfab409dba65d39c7
