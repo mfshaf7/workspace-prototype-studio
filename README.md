@@ -48,6 +48,11 @@ New Prototype records use the deterministic Landing owner command rather than
 manual template and registry copying. See
 [docs/prototype-landing.md](docs/prototype-landing.md).
 
+Accepted Proposals routed to incubation first enter through the smaller
+Proposal target application. It captures one `exploring` Prototype and its
+Proposal-backed Entry Packet, then stops before Landing configuration or source
+creation. See [docs/proposal-target-application.md](docs/proposal-target-application.md).
+
 Candidate and Baseline Promotion use the separate deterministic maturity owner
 command. See [docs/prototype-maturity.md](docs/prototype-maturity.md).
 
