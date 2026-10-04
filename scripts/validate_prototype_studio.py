@@ -21,6 +21,7 @@ from packages.prototype_closure.closure import validate_closure_records  # noqa:
 from packages.prototype_closure.owner_evidence import validate_retention_plan_records  # noqa: E402
 from packages.prototype_landing.landing import validate_landing_records  # noqa: E402
 from packages.prototype_maturity.maturity import validate_maturity_records  # noqa: E402
+from packages.proposal_target_application.application import validate_capture_records  # noqa: E402
 
 
 LIFECYCLES = {
@@ -396,6 +397,10 @@ def main() -> int:
         validate_packet_records(repo_root)
     except PacketError as error:
         errors.append(f"Prototype Delivery packets: {error.code}: {error}")
+    try:
+        validate_capture_records(repo_root)
+    except PacketError as error:
+        errors.append(f"Proposal target records: {error.code}: {error}")
     try:
         validate_landing_records(repo_root)
     except PacketError as error:
