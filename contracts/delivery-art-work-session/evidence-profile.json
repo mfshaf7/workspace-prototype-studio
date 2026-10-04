@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "profile_id": "workspace-prototype-studio-delivery-art-evidence-v1",
+  "owner_repo": "workspace-prototype-studio",
+  "commands": [
+    {
+      "id": "owner-repository-tests",
+      "kind": "tests",
+      "name": "Prototype Studio test suite",
+      "executable": "python3",
+      "args": ["-m", "unittest", "discover", "-s", "tests"],
+      "fidelity": "real-git",
+      "conformance_binding": "matching-fidelity",
+      "timeout_seconds": 1200
+    },
+    {
+      "id": "prototype-registry-validation",
+      "kind": "validations",
+      "name": "Prototype registry validation",
+      "executable": "python3",
+      "args": ["scripts/validate_prototype_studio.py", "--repo-root", "."],
+      "fidelity": "filesystem",
+      "conformance_binding": "none",
+      "timeout_seconds": 300
+    },
+    {
+      "id": "prototype-landing-validation",
+      "kind": "validations",
+      "name": "Prototype landing validation",
+      "executable": "python3",
+      "args": ["scripts/prototype_landing.py", "--repo-root", ".", "validate-all"],
+      "fidelity": "filesystem",
+      "conformance_binding": "none",
+      "timeout_seconds": 300
+    },
+    {
+      "id": "prototype-maturity-validation",
+      "kind": "validations",
+      "name": "Prototype maturity validation",
+      "executable": "python3",
+      "args": ["scripts/prototype_maturity.py", "--repo-root", ".", "validate-all"],
+      "fidelity": "filesystem",
+      "conformance_binding": "none",
+      "timeout_seconds": 300
+    },
+    {
+      "id": "prototype-closure-validation",
+      "kind": "validations",
+      "name": "Prototype closure validation",
+      "executable": "python3",
+      "args": ["scripts/prototype_closure.py", "--repo-root", ".", "validate-all"],
+      "fidelity": "filesystem",
+      "conformance_binding": "none",
+      "timeout_seconds": 300
+    },
+    {
+      "id": "governance-console-architecture-validation",
+      "kind": "validations",
+      "name": "Governance Console prototype architecture validation",
+      "executable": "python3",
+      "args": ["scripts/validate_governance_console_architecture.py"],
+      "fidelity": "filesystem",
+      "conformance_binding": "none",
+      "timeout_seconds": 300
+    },
+    {
+      "id": "source-diff-validation",
+      "kind": "validations",
+      "name": "Source diff whitespace validation",
+      "executable": "git",
+      "args": ["diff", "--check", "{{base_commit}}...{{head_commit}}"],
+      "fidelity": "real-git",
+      "conformance_binding": "none",
+      "timeout_seconds": 60
+    }
+  ]
+}
