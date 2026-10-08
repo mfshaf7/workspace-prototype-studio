@@ -139,8 +139,15 @@ def _request_ref(request: dict[str, Any]) -> dict[str, str]:
 def _validate_request_semantics(request: dict[str, Any]) -> None:
     proposal_number = request["source"]["proposal_id"].removeprefix("idea-")
     record_number = request["source"]["record_ref"].rsplit("/", 1)[-1]
-    if proposal_number != record_number:
-        raise PacketError("proposal_identity_mismatch", "Proposal id and canonical record ref identify different records")
+    packet_number = request["source"]["handoff_packet_ref"].removeprefix("proposal-packet:")
+    expected_prototype = f"prototype:proposal-{proposal_number}"
+    application_parts = request["application_id"].split(":")
+    if proposal_number != record_number or proposal_number != packet_number:
+        raise PacketError("proposal_identity_mismatch", "Proposal id and canonical source references identify different records")
+    if request["target"]["prototype_id"] != expected_prototype:
+        raise PacketError("prototype_identity_invalid", "Prototype identity must be generated from the Proposal identity")
+    if application_parts[1] != f"proposal-{proposal_number}":
+        raise PacketError("application_identity_invalid", "Application identity must be generated from the Proposal identity")
     custody = request["source"]["route"]["source_custody"]
     expected_mode = {
         "existing-repo": "existing",
@@ -155,6 +162,7 @@ def _validate_request_semantics(request: dict[str, Any]) -> None:
 def _entry_packet(request: dict[str, Any], slug: str) -> dict[str, Any]:
     source = request["source"]
     custody = source["route"]["source_custody"]
+    proposal_number = source["proposal_id"].removeprefix("idea-")
     packet = {
         "schema_version": 1,
         "artifact_type": "prototype-entry-packet",
@@ -168,21 +176,22 @@ def _entry_packet(request: dict[str, Any], slug: str) -> dict[str, Any]:
             "revision": source["record_version"],
         },
         "suggestions": {
-            "name": source["suggested_name"],
-            "objective": source["suggested_objective"],
+            "name": f"Proposal {proposal_number} Prototype",
+            "objective": None,
             "support_profile": None,
         },
         "constraints": [
-            {"code": "proposal-route", "detail": source["route"]["rationale"]},
+            {"code": "proposal-route", "detail": "target=prototype"},
             {
                 "code": "source-custody",
                 "detail": (
-                    f"{custody['classification']} / {custody['repository_mode']} / "
-                    f"{custody['repository_gate_state']}: {custody['rationale']}"
+                    f"classification={custody['classification']};"
+                    f"repository_mode={custody['repository_mode']};"
+                    f"repository_gate_state={custody['repository_gate_state']}"
                 ),
             },
         ],
-        "requested_by": request["operator_ref"],
+        "requested_by": "operator-orchestration-service",
     }
     packet["packet_digest"] = content_digest(packet)
     return packet
@@ -194,7 +203,7 @@ def _build_record(repo_root: Path, request: dict[str, Any]) -> dict[str, Any]:
     entry_validator = _validator(repo_root, "../prototype-landing/prototype-landing-entry-packet.schema.json")
     validate_schema(entry_validator, entry, code="entry_packet_invalid", label="generated Prototype Entry Packet")
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "artifact_type": "proposal-routed-prototype-capture",
         "record_ref": f"record://prototype-captures/{slug}",
         "prototype_id": request["target"]["prototype_id"],
@@ -237,7 +246,7 @@ def _build_result(
 ) -> dict[str, Any]:
     registry_digest = content_digest(load_yaml(repo_root / "prototypes.yaml"))
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "artifact_type": "proposal-prototype-application-result",
         "application_ref": _request_ref(request),
         "replayed": replayed,
@@ -262,8 +271,6 @@ def _build_result(
             "outcome": "replayed" if replayed else "prepared",
             "recorded_at": record["captured_at"],
             "next_action": {"code": "prototype-landing", "owner_ref": "operator-orchestration-service"},
-            "correlation_id": request["correlation_id"],
-            "idempotency_key": request["idempotency_key"],
         },
     }
     result = _with_digest(payload, "result_digest")
@@ -339,11 +346,10 @@ def _history_requests(repo_root: Path) -> Iterator[tuple[Path, dict[str, Any]]]:
 
 def _existing_request(repo_root: Path, request: dict[str, Any]) -> dict[str, Any] | None:
     for _, existing in _history_requests(repo_root):
-        same_key = existing["idempotency_key"] == request["idempotency_key"]
         same_id = existing["application_id"] == request["application_id"]
-        if same_key or same_id:
+        if same_id:
             if existing != request:
-                raise PacketError("idempotency_conflict", "application id or idempotency key is bound to different content")
+                raise PacketError("idempotency_conflict", "application id is bound to different content")
             return existing
     return None
 
@@ -426,7 +432,6 @@ def apply_application(
 def validate_capture_records(repo_root: Path) -> list[Path]:
     repo_root = repo_root.resolve()
     validate_contracts(repo_root)
-    seen_keys: dict[str, str] = {}
     seen_ids: dict[str, str] = {}
     validated: list[Path] = []
     for record_path in sorted((repo_root / CAPTURE_DIR).glob("*/record.json")):
@@ -458,9 +463,8 @@ def validate_capture_records(repo_root: Path) -> list[Path]:
                 if record != _build_record(repo_root, request):
                     raise PacketError("source_record_mismatch", f"capture record {slug} differs from its application")
             digest = request["request_digest"]
-            prior_key = seen_keys.setdefault(request["idempotency_key"], digest)
             prior_id = seen_ids.setdefault(request["application_id"], digest)
-            if prior_key != digest or prior_id != digest:
+            if prior_id != digest:
                 raise PacketError("idempotency_conflict", "capture history reuses an application identity")
         if not matched:
             raise PacketError("source_record_unbound", f"capture record {slug} has no matching application")
