@@ -9,6 +9,7 @@
     "receipt_id",
     "request_id",
     "action",
+    "expected",
     "profile_id",
     "prototype_id",
     "profile_digest",
@@ -25,6 +26,18 @@
     "receipt_id": {"type": "string", "pattern": "^prototype-preview-receipt:[a-f0-9]{24}$"},
     "request_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$"},
     "action": {"enum": ["start", "restart", "stop"]},
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instance_id", "profile_digest", "runtime_state", "source_digest", "source_revision"],
+      "properties": {
+        "instance_id": {"type": ["string", "null"], "pattern": "^[a-f0-9]{24}$"},
+        "profile_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+        "runtime_state": {"enum": ["stopped", "running", "stale"]},
+        "source_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+        "source_revision": {"type": "string", "pattern": "^[a-f0-9]{40}$"}
+      }
+    },
     "profile_id": {"type": "string"},
     "prototype_id": {"type": "string"},
     "profile_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},

@@ -28,6 +28,8 @@ PROFILE_SCHEMA = Path("schemas/prototype-preview-profile.schema.json")
 PROJECTION_SCHEMA = Path("schemas/prototype-preview-projection.schema.json")
 RECEIPT_SCHEMA = Path("schemas/prototype-preview-receipt.schema.json")
 REQUEST_ID_CHARS = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._:-")
+DIGEST_PREFIX = "sha256:"
+HEX_CHARS = frozenset("0123456789abcdef")
 MAX_SOURCE_FILES = 500
 MAX_SOURCE_BYTES = 5 * 1024 * 1024
 _SPAWNED_PROCESSES: dict[int, subprocess.Popen[bytes]] = {}
@@ -45,6 +47,18 @@ def _canonical(value: Any) -> bytes:
 
 def _digest(value: Any) -> str:
     return "sha256:" + hashlib.sha256(_canonical(value)).hexdigest()
+
+
+def _is_hex(value: Any, length: int) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == length
+        and all(char in HEX_CHARS for char in value)
+    )
+
+
+def _is_digest(value: Any) -> bool:
+    return isinstance(value, str) and value.startswith(DIGEST_PREFIX) and _is_hex(value[7:], 64)
 
 
 def _utc_now() -> str:
@@ -91,18 +105,73 @@ def _validate(validator: Draft202012Validator, value: Any, label: str) -> None:
         raise PreviewError("record_invalid", f"{label} {location}: {error.message}")
 
 
-def _git_revision(repo_root: Path) -> str:
+def _git(repo_root: Path, args: list[str], code: str, message: str) -> subprocess.CompletedProcess[str]:
     result = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
+        ["git", *args],
         cwd=repo_root,
         check=False,
         capture_output=True,
         text=True,
     )
+    if result.returncode:
+        raise PreviewError(code, message)
+    return result
+
+
+def _git_revision(repo_root: Path) -> str:
+    result = _git(
+        repo_root,
+        ["rev-parse", "HEAD"],
+        "source_revision_unavailable",
+        "preview source must be a Git revision",
+    )
     revision = result.stdout.strip()
-    if result.returncode or len(revision) != 40:
+    if len(revision) != 40:
         raise PreviewError("source_revision_unavailable", "preview source must be a Git revision")
     return revision
+
+
+def _assert_reviewed_checkout(repo_root: Path, source_root: Path) -> None:
+    status = _git(
+        repo_root,
+        ["status", "--porcelain=v1", "--untracked-files=all"],
+        "source_state_unavailable",
+        "preview source state is unavailable",
+    )
+    if status.stdout:
+        raise PreviewError(
+            "source_checkout_dirty",
+            "preview runtime requires a clean reviewed checkout",
+        )
+    source_relative = source_root.relative_to(repo_root).as_posix()
+    tracked = _git(
+        repo_root,
+        ["ls-files", "-z", "--", source_relative],
+        "source_custody_unavailable",
+        "preview source custody is unavailable",
+    )
+    tracked_paths = {
+        Path(item).relative_to(source_relative).as_posix()
+        for item in tracked.stdout.split("\0")
+        if item
+    }
+    disk_paths = {
+        path.relative_to(source_root).as_posix()
+        for path in source_root.rglob("*")
+        if path.is_file() or path.is_symlink()
+    }
+    if not tracked_paths or tracked_paths != disk_paths:
+        raise PreviewError(
+            "source_custody_invalid",
+            "preview source must contain only reviewed tracked files",
+        )
+    for relative_path in tracked_paths:
+        path = source_root / relative_path
+        if path.is_symlink() or not path.is_file():
+            raise PreviewError(
+                "source_custody_invalid",
+                "preview source must contain only reviewed regular files",
+            )
 
 
 def _source_digest(source_root: Path) -> str:
@@ -153,8 +222,9 @@ class PreviewRuntime:
             raise PreviewError("source_path_denied", "preview source must stay under prototypes/") from error
         if not self.source_root.is_dir() or self.source_root.is_symlink():
             raise PreviewError("source_unavailable", "preview source root must be a real directory")
-        self.source_digest = _source_digest(self.source_root)
         self.source_revision = _git_revision(self.repo_root)
+        _assert_reviewed_checkout(self.repo_root, self.source_root)
+        self.source_digest = _source_digest(self.source_root)
         self.state_root = (state_root or _default_state_root()).resolve() / profile["profile_id"]
         try:
             self.state_root.relative_to(self.repo_root)
@@ -255,12 +325,21 @@ class PreviewRuntime:
     def _request_path(self, request_id: str) -> Path:
         return self.request_dir / (hashlib.sha256(request_id.encode()).hexdigest() + ".json")
 
-    def _replay(self, request_id: str, action: str) -> dict[str, Any] | None:
+    def _replay(
+        self,
+        request_id: str,
+        action: str,
+        expected: dict[str, Any],
+    ) -> dict[str, Any] | None:
         path = self._request_path(request_id)
         if not path.is_file():
             return None
         receipt = _load_json(path)
-        if receipt.get("request_id") != request_id or receipt.get("action") != action:
+        if (
+            receipt.get("request_id") != request_id
+            or receipt.get("action") != action
+            or receipt.get("expected") != expected
+        ):
             raise PreviewError("request_replay_conflict", "request id is already bound to another command")
         self._validate_receipt(receipt)
         if any(
@@ -280,7 +359,14 @@ class PreviewRuntime:
         if receipt["receipt_digest"] != _digest(body):
             raise PreviewError("receipt_digest_mismatch", "preview receipt digest is invalid")
 
-    def _store_receipt(self, request_id: str, action: str, before: str, after: str) -> dict[str, Any]:
+    def _store_receipt(
+        self,
+        request_id: str,
+        action: str,
+        expected: dict[str, Any],
+        before: str,
+        after: str,
+    ) -> dict[str, Any]:
         body = {
             "schema_version": 1,
             "receipt_id": "prototype-preview-receipt:" + hashlib.sha256(
@@ -288,6 +374,7 @@ class PreviewRuntime:
             ).hexdigest()[:24],
             "request_id": request_id,
             "action": action,
+            "expected": copy.deepcopy(expected),
             "profile_id": self.profile["profile_id"],
             "prototype_id": self.profile["prototype_id"],
             "profile_digest": self.profile_digest,
@@ -384,16 +471,29 @@ class PreviewRuntime:
             time.sleep(0.05)
         raise PreviewError("runtime_stop_failed", "preview runtime did not stop within five seconds")
 
-    def command(self, action: str, request_id: str) -> dict[str, Any]:
+    def command(self, action: str, request_id: str, expected: Any) -> dict[str, Any]:
         if action not in {"start", "restart", "stop"}:
             raise PreviewError("command_invalid", f"unsupported mutating command {action}")
         self._check_request_id(request_id)
+        expected = self._expected_state(expected)
         with self._locked():
-            replay = self._replay(request_id, action)
+            replay = self._replay(request_id, action, expected)
             if replay:
                 return {"schema_version": 1, "status": "replayed", "receipt": replay}
             state = self._state()
             before = self._runtime_state(state)
+            actual = {
+                "instance_id": state.get("instance_id") if state and before == "running" else None,
+                "profile_digest": self.profile_digest,
+                "runtime_state": before,
+                "source_digest": self.source_digest,
+                "source_revision": self.source_revision,
+            }
+            if actual != expected:
+                raise PreviewError(
+                    "expected_state_stale",
+                    "preview runtime changed after review; refresh before retrying",
+                )
             if action == "start":
                 if before == "running":
                     raise PreviewError("runtime_already_running", "preview runtime is already running")
@@ -414,11 +514,36 @@ class PreviewRuntime:
                 self._stop(state)
                 state = None
             after = self._runtime_state(state)
-            receipt = self._store_receipt(request_id, action, before, after)
+            receipt = self._store_receipt(request_id, action, expected, before, after)
             if state:
                 state["latest_receipt"] = self._receipt_ref(receipt)
                 _atomic_json(self.state_path, state)
             return {"schema_version": 1, "status": "applied", "receipt": receipt}
+
+    def _expected_state(self, value: Any) -> dict[str, Any]:
+        if not isinstance(value, dict):
+            raise PreviewError("expected_state_invalid", "expected state must be an object")
+        expected = {
+            "instance_id": value.get("instance_id"),
+            "profile_digest": value.get("profile_digest"),
+            "runtime_state": value.get("runtime_state"),
+            "source_digest": value.get("source_digest"),
+            "source_revision": value.get("source_revision"),
+        }
+        if (
+            expected["runtime_state"] not in {"running", "stale", "stopped"}
+            or not _is_digest(expected["profile_digest"])
+            or not _is_digest(expected["source_digest"])
+            or not _is_hex(expected["source_revision"], 40)
+            or (
+                expected["instance_id"] is not None
+                and (
+                    not _is_hex(expected["instance_id"], 24)
+                )
+            )
+        ):
+            raise PreviewError("expected_state_invalid", "expected state binding is invalid")
+        return expected
 
     def proof(self) -> dict[str, Any]:
         projection = self.projection()
