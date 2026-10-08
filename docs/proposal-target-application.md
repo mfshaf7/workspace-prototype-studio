@@ -16,14 +16,22 @@ Read the current optimistic-concurrency state from the clean target branch:
 
 ```bash
 python3 scripts/proposal_target_application.py state \
-  --prototype-id prototype:sample-tool
+  --prototype-id prototype:proposal-851
 ```
 
 OOS builds a versioned request under
 `contracts/proposal-target-application/request.schema.json`. The request must
 bind the current accepted Proposal version, prepared packet and digest,
-resolved repository posture, OOS authorization receipt, target identity,
-review branch, and exact target state returned above.
+enumerated repository posture, OOS authorization receipt, generated target
+identity, digest-derived review branch, and exact target state returned above.
+
+Prototype Studio is public. The request boundary therefore accepts only opaque
+canonical references, digests, generated identifiers and labels, timestamps,
+and enumerated route or custody posture. It rejects operator identifiers,
+Proposal-provided names or objectives, rationale text, custody owner or source
+references, and every other unreviewed free-form field before a branch can be
+prepared. Private Proposal content stays in the canonical Proposal authority
+and OOS transaction state.
 
 Apply it from that same non-default review branch:
 
@@ -40,21 +48,24 @@ only:
 - the exact immutable application under that record's `history/`
 
 The capture contains a digest-bound `proposal-routed` Prototype Entry Packet.
-That packet is input to the separate Landing workflow; all Proposal-provided
-name, objective, support, and custody context remains suggestion or constraint
-until the operator accepts a Landing request.
+Its display label is generated from the Proposal number, its objective and
+support suggestion are empty, its requester is the OOS service identity, and
+its constraints contain only enumerated posture. The packet is input to the
+separate Landing workflow; descriptive Proposal content may enter public source
+only through that later workflow's separately reviewed admission boundary.
 
 ## Failure And Replay
 
 The operation fails closed for stale target state, dirty or detached source,
 the wrong branch, an unaccepted or stale Proposal, a non-Prototype route,
 unresolved or inconsistent repository custody, missing OOS approval, duplicate
-Prototype identity, malformed evidence, and conflicting application or
-idempotency identities. A failed first application leaves no record or history.
+Prototype identity, malformed evidence, free-form or operator fields, and a
+conflicting application identity. A failed first application leaves no record
+or history.
 
 An exact replay creates no second capture and returns the same target and
-receipt identities with outcome `replayed`. Reusing either the application id
-or idempotency key for different content is rejected. Before apply, cancel by
+receipt identities with outcome `replayed`. Reusing the application id for
+different content is rejected. Before apply, cancel by
 not submitting the request. After source preparation, OOS owns review-branch
 cleanup or continuation; deleting target evidence is not a workflow command.
 

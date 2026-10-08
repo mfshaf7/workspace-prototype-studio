@@ -22,6 +22,7 @@ from packages.prototype_delivery_packet.contract import PacketError, content_dig
 SOURCE_ROOT = Path(__file__).resolve().parents[1]
 NOW = "2026-10-04T10:30:00Z"
 PACKET_DIGEST = "sha256:" + "a" * 64
+SOURCE_BRANCH = "proposal-target/" + "b" * 64
 
 
 def bind_request(payload: dict) -> dict:
@@ -58,7 +59,7 @@ class ProposalTargetApplicationTest(unittest.TestCase):
         self.git("config", "user.name", "Proposal Target Test")
         self.git("add", ".")
         self.git("commit", "-m", "fixture")
-        self.git("switch", "-c", "feature/test-proposal-target")
+        self.git("switch", "-c", SOURCE_BRANCH)
 
     def tearDown(self) -> None:
         self.temp.cleanup()
@@ -69,13 +70,12 @@ class ProposalTargetApplicationTest(unittest.TestCase):
         ).stdout.strip()
 
     def request(self, **changes) -> dict:
-        state = current_state(self.root, "prototype:sample-tool")["expected_state"]
+        state = current_state(self.root, "prototype:proposal-851")["expected_state"]
         payload = {
-            "schema_version": 1,
+            "schema_version": 2,
             "artifact_type": "proposal-prototype-application",
-            "application_id": "proposal-prototype-application:sample-tool:1",
+            "application_id": "proposal-prototype-application:proposal-851:1",
             "requested_at": NOW,
-            "operator_ref": "operator:workspace-owner",
             "source": {
                 "authority": "workspace-proposals",
                 "proposal_id": "idea-851",
@@ -85,30 +85,22 @@ class ProposalTargetApplicationTest(unittest.TestCase):
                 "status": "accepted",
                 "handoff_packet_ref": "proposal-packet:851",
                 "handoff_packet_digest": PACKET_DIGEST,
-                "suggested_name": "Sample Tool",
-                "suggested_objective": "Explore a bounded operator tool.",
                 "route": {
                     "target": "prototype",
-                    "rationale": "The idea needs incubation before Delivery.",
                     "source_custody": {
                         "classification": "platform-internal",
                         "repository_mode": "not-required",
                         "repository_gate_state": "resolved",
-                        "owner": None,
-                        "source_ref": None,
-                        "rationale": "No source exists before Prototype Landing.",
                     },
                 },
             },
             "authorization": {
                 "authority": "operator-orchestration-service",
                 "decision": "approved",
-                "receipt_ref": "oos://proposal-applications/851",
+                "receipt_ref": "oos://proposal-target-authorizations/" + "c" * 64,
             },
-            "target": {"prototype_id": "prototype:sample-tool", "expected_state": state},
-            "source_branch": "feature/test-proposal-target",
-            "correlation_id": "correlation:proposal-851:prototype",
-            "idempotency_key": "proposal-851:prototype:1",
+            "target": {"prototype_id": "prototype:proposal-851", "expected_state": state},
+            "source_branch": SOURCE_BRANCH,
         }
         for key, value in changes.items():
             payload[key] = value
@@ -125,7 +117,7 @@ class ProposalTargetApplicationTest(unittest.TestCase):
         request = self.request()
         applied = self.apply(request)
         self.assertEqual(applied.status, "prepared")
-        record_path = self.root / "records/prototype-captures/sample-tool/record.json"
+        record_path = self.root / "records/prototype-captures/proposal-851/record.json"
         record = json.loads(record_path.read_text(encoding="utf-8"))
         result = json.loads(applied.result_path.read_text(encoding="utf-8"))
         registry = yaml.safe_load((self.root / "prototypes.yaml").read_text(encoding="utf-8"))
@@ -135,9 +127,15 @@ class ProposalTargetApplicationTest(unittest.TestCase):
         self.assertEqual(record["next_action"], "prototype-landing")
         self.assertEqual(record["proposal"]["handoff_packet_ref"], "proposal-packet:851")
         self.assertEqual(record["entry_packet"]["ingress_class"], "proposal-routed")
+        self.assertEqual(record["entry_packet"]["suggestions"]["name"], "Proposal 851 Prototype")
+        self.assertIsNone(record["entry_packet"]["suggestions"]["objective"])
+        self.assertEqual(record["entry_packet"]["requested_by"], "operator-orchestration-service")
+        public_bytes = record_path.read_text(encoding="utf-8") + next(record_path.parent.joinpath("history").glob("*.json")).read_text(encoding="utf-8")
+        for forbidden in ("operator:workspace-owner", "Sample Tool", "bounded operator tool", "rationale", "owner", "source_ref"):
+            self.assertNotIn(forbidden, public_bytes)
         self.assertEqual(registry["prototypes"], [])
-        self.assertFalse((self.root / "records/prototype-landings/sample-tool").exists())
-        self.assertFalse((self.root / "docs/prototypes/sample-tool").exists())
+        self.assertFalse((self.root / "records/prototype-landings/proposal-851").exists())
+        self.assertFalse((self.root / "docs/prototypes/proposal-851").exists())
         self.assertEqual(result["receipt"]["owner"], "workspace-prototype-studio")
         self.assertEqual(result["receipt"]["outcome"], "prepared")
         self.assertEqual(result["receipt"]["next_action"]["code"], "prototype-landing")
@@ -163,7 +161,7 @@ class ProposalTargetApplicationTest(unittest.TestCase):
         request = self.request()
         self.apply(request)
         conflict = copy.deepcopy(request)
-        conflict["source"]["suggested_name"] = "Different Tool"
+        conflict["source"]["record_version"] = "version-20"
         conflict = bind_request({key: value for key, value in conflict.items() if key != "request_digest"})
         with self.assertRaisesRegex(PacketError, "bound to different content") as caught:
             self.apply(conflict, "conflict.json")
@@ -180,7 +178,7 @@ class ProposalTargetApplicationTest(unittest.TestCase):
         self.assertFalse((self.root / "records").exists())
 
     def test_wrong_branch_and_dirty_source_are_rejected(self) -> None:
-        request = self.request(source_branch="feature/another")
+        request = self.request(source_branch="proposal-target/" + "d" * 64)
         with self.assertRaises(PacketError) as branch_error:
             self.apply(request)
         self.assertEqual(branch_error.exception.code, "source_branch_invalid")
@@ -206,9 +204,6 @@ class ProposalTargetApplicationTest(unittest.TestCase):
             "classification": "existing-repo",
             "repository_mode": "new",
             "repository_gate_state": "resolved",
-            "owner": "workspace-prototype-studio",
-            "source_ref": "repo:workspace-prototype-studio",
-            "rationale": "Mismatched classification.",
         }
         cases.append((wrong_custody, "source_custody_invalid"))
 
@@ -220,9 +215,32 @@ class ProposalTargetApplicationTest(unittest.TestCase):
                 self.assertEqual(caught.exception.code, code)
         self.assertFalse((self.root / "records").exists())
 
+    def test_public_boundary_rejects_free_form_and_operator_fields(self) -> None:
+        cases = []
+        operator = self.request()
+        operator["operator_ref"] = "operator:private-person"
+        cases.append(operator)
+        suggestion = self.request()
+        suggestion["source"]["suggested_name"] = "Confidential Acquisition"
+        cases.append(suggestion)
+        rationale = self.request()
+        rationale["source"]["route"]["rationale"] = "Contains private business context."
+        cases.append(rationale)
+        custody = self.request()
+        custody["source"]["route"]["source_custody"]["owner"] = "private-team"
+        cases.append(custody)
+
+        for index, payload in enumerate(cases):
+            with self.subTest(index=index):
+                payload = bind_request({key: value for key, value in payload.items() if key != "request_digest"})
+                with self.assertRaises(PacketError) as caught:
+                    self.apply(payload, f"unsafe-{index}.json")
+                self.assertEqual(caught.exception.code, "artifact_invalid")
+        self.assertFalse((self.root / "records").exists())
+
     def test_existing_registry_identity_is_not_overwritten(self) -> None:
         registry = yaml.safe_load((self.root / "prototypes.yaml").read_text(encoding="utf-8"))
-        registry["prototypes"].append({"id": "sample-tool"})
+        registry["prototypes"].append({"id": "proposal-851"})
         (self.root / "prototypes.yaml").write_text(yaml.safe_dump(registry), encoding="utf-8")
         self.git("add", "prototypes.yaml")
         self.git("commit", "-m", "existing identity")
@@ -243,15 +261,15 @@ class ProposalTargetApplicationTest(unittest.TestCase):
         ):
             with self.assertRaises(PacketError):
                 apply_application(repo_root=self.root, request=request, output_path=output)
-        self.assertFalse((self.root / "records/prototype-captures/sample-tool/record.json").exists())
+        self.assertFalse((self.root / "records/prototype-captures/proposal-851/record.json").exists())
         self.assertFalse(any((self.root / "records/prototype-captures").glob("*/history/*.json")))
         self.assertFalse(output.exists())
 
     def test_validator_rejects_tampered_record(self) -> None:
         self.apply(self.request())
-        path = self.root / "records/prototype-captures/sample-tool/record.json"
+        path = self.root / "records/prototype-captures/proposal-851/record.json"
         record = json.loads(path.read_text(encoding="utf-8"))
-        record["entry_packet"]["suggestions"]["name"] = "Forged"
+        record["entry_packet"]["packet_digest"] = "sha256:" + "f" * 64
         path.write_text(json.dumps(record), encoding="utf-8")
         with self.assertRaises(PacketError) as caught:
             validate_capture_records(self.root)
