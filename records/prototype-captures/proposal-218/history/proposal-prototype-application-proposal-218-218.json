@@ -1,0 +1,40 @@
+{
+  "application_id": "proposal-prototype-application:proposal-218:218",
+  "artifact_type": "proposal-prototype-application",
+  "authorization": {
+    "authority": "operator-orchestration-service",
+    "decision": "approved",
+    "receipt_ref": "oos://proposal-target-authorizations/6d2c114d50b6080ac48c5ff1733f660a48a37f1674dcb9d8441d3a3a48dbaf11"
+  },
+  "request_digest": "sha256:53f00f973456418b571ed5f8828adbf40682acb14aefae71e1cbb7c0b0181a41",
+  "requested_at": "2026-10-08T11:28:53.058Z",
+  "schema_version": 2,
+  "source": {
+    "authority": "workspace-proposals",
+    "handoff_packet_digest": "sha256:1e7a49be24612b67114ba1cbf7fc8d4c3352e492f756b5f856b82e06eae7260f",
+    "handoff_packet_ref": "proposal-handoff:idea-218:version-3",
+    "projection_state": "current",
+    "proposal_id": "idea-218",
+    "record_ref": "openproject://work_packages/218",
+    "record_version": "version-4",
+    "route": {
+      "source_custody": {
+        "classification": "existing-repo",
+        "repository_gate_state": "resolved",
+        "repository_mode": "existing"
+      },
+      "target": "prototype"
+    },
+    "status": "accepted"
+  },
+  "source_branch": "proposal-target/9de4af8e7bd7b66d5c81711bbdbfd64069e5cb55d8d40e9b5b4181fa02175a1b",
+  "target": {
+    "expected_state": {
+      "record_digest": null,
+      "record_present": false,
+      "registry_digest": "sha256:50f343d0c7ae4ef08100cd799a4a3c88bc4a905db6f028c9f568eecef83f3d7a",
+      "source_revision": "4066ea5ba5a68ab7ab12acc7fc395897e1ae6c3f"
+    },
+    "prototype_id": "prototype:proposal-218"
+  }
+}
