@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import socket
+import subprocess
 import tempfile
 import unittest
 import urllib.error
@@ -15,6 +16,7 @@ from packages.prototype_preview.runtime import (
     PROFILE_SCHEMA,
     PreviewError,
     PreviewRuntime,
+    _assert_reviewed_checkout,
     _validate,
     _validator,
     validate_profiles,
@@ -23,6 +25,17 @@ from packages.prototype_preview.runtime import (
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROFILE_PATH = REPO_ROOT / "records/prototype-preview-profiles/client-review-portal.yaml"
+
+
+def expected_state(runtime: PreviewRuntime) -> dict[str, object]:
+    projection = runtime.projection()
+    return {
+        "instance_id": projection["instance_id"],
+        "profile_digest": projection["profile_digest"],
+        "runtime_state": projection["runtime_state"],
+        "source_digest": projection["source_digest"],
+        "source_revision": projection["source_revision"],
+    }
 
 
 class PrototypePreviewProfileTests(unittest.TestCase):
@@ -63,20 +76,25 @@ class PrototypePreviewRuntimeTests(unittest.TestCase):
         try:
             projection = self.runtime.projection()
             if projection["runtime_state"] == "running":
-                self.runtime.command("stop", "test-cleanup-stop")
+                self.runtime.command(
+                    "stop",
+                    "test-cleanup-stop",
+                    expected_state(self.runtime),
+                )
         finally:
             self.temporary.cleanup()
 
     def test_lifecycle_is_receipt_bound_replay_safe_and_read_only_provable(self) -> None:
-        start = self.runtime.command("start", "test-start-001")
+        stopped = expected_state(self.runtime)
+        start = self.runtime.command("start", "test-start-001", stopped)
         self.assertEqual(start["status"], "applied")
         self.assertEqual(start["receipt"]["after_state"], "running")
 
-        replay = self.runtime.command("start", "test-start-001")
+        replay = self.runtime.command("start", "test-start-001", stopped)
         self.assertEqual(replay["status"], "replayed")
         self.assertEqual(replay["receipt"], start["receipt"])
         with self.assertRaisesRegex(PreviewError, "another command"):
-            self.runtime.command("stop", "test-start-001")
+            self.runtime.command("stop", "test-start-001", stopped)
 
         projection = self.runtime.projection()
         self.assertEqual(projection["runtime_state"], "running")
@@ -101,26 +119,73 @@ class PrototypePreviewRuntimeTests(unittest.TestCase):
                     urllib.request.urlopen(f"http://127.0.0.1:18191{denied_path}", timeout=2)
                 self.assertEqual(denied.exception.code, 404)
 
-        stop = self.runtime.command("stop", "test-stop-001")
+        running = expected_state(self.runtime)
+        stop = self.runtime.command("stop", "test-stop-001", running)
         self.assertEqual(stop["receipt"]["after_state"], "stopped")
-        stop_replay = self.runtime.command("stop", "test-stop-001")
+        stop_replay = self.runtime.command("stop", "test-stop-001", running)
         self.assertEqual(stop_replay["status"], "replayed")
         self.assertEqual(stop_replay["receipt"], stop["receipt"])
         self.assertEqual(self.runtime.projection()["runtime_state"], "stopped")
 
     def test_tampered_receipt_is_rejected(self) -> None:
-        self.runtime.command("start", "test-start-tamper")
+        expected = expected_state(self.runtime)
+        self.runtime.command("start", "test-start-tamper", expected)
         request_path = self.runtime._request_path("test-start-tamper")
         receipt = json.loads(request_path.read_text(encoding="utf-8"))
         receipt["source_revision"] = "0" * 40
         request_path.write_text(json.dumps(receipt), encoding="utf-8")
         with self.assertRaisesRegex(PreviewError, "digest"):
-            self.runtime.command("start", "test-start-tamper")
+            self.runtime.command("start", "test-start-tamper", expected)
 
     def test_invalid_request_id_is_rejected_before_mutation(self) -> None:
         with self.assertRaisesRegex(PreviewError, "request id"):
-            self.runtime.command("start", "../unsafe")
+            self.runtime.command("start", "../unsafe", expected_state(self.runtime))
         self.assertEqual(self.runtime.projection()["runtime_state"], "stopped")
+
+    def test_expected_state_is_checked_inside_the_owner_lock(self) -> None:
+        stale = expected_state(self.runtime)
+        self.runtime.command("start", "test-atomic-start", stale)
+        with self.assertRaisesRegex(PreviewError, "changed after review"):
+            self.runtime.command("stop", "test-atomic-stale-stop", stale)
+        self.assertEqual(self.runtime.projection()["runtime_state"], "running")
+        with self.assertRaisesRegex(PreviewError, "another command"):
+            self.runtime.command(
+                "start",
+                "test-atomic-start",
+                expected_state(self.runtime),
+            )
+
+
+class PrototypePreviewSourceCustodyTests(unittest.TestCase):
+    def test_dirty_and_untracked_served_source_are_denied(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo_root = Path(directory)
+            source_root = repo_root / "prototypes/example"
+            source_root.mkdir(parents=True)
+            (source_root / "index.html").write_text("reviewed", encoding="utf-8")
+            (repo_root / ".gitignore").write_text("*.ignored\n", encoding="utf-8")
+            for args in (
+                ["init", "-q"],
+                ["config", "user.name", "Preview Test"],
+                ["config", "user.email", "preview@example.invalid"],
+                ["add", "."],
+                ["commit", "-qm", "baseline"],
+            ):
+                subprocess.run(["git", *args], cwd=repo_root, check=True)
+            _assert_reviewed_checkout(repo_root, source_root)
+
+            (source_root / "index.html").write_text("dirty", encoding="utf-8")
+            with self.assertRaisesRegex(PreviewError, "clean reviewed checkout"):
+                _assert_reviewed_checkout(repo_root, source_root)
+            subprocess.run(
+                ["git", "restore", "prototypes/example/index.html"],
+                cwd=repo_root,
+                check=True,
+            )
+
+            (source_root / "hidden.ignored").write_text("not reviewed", encoding="utf-8")
+            with self.assertRaisesRegex(PreviewError, "reviewed tracked files"):
+                _assert_reviewed_checkout(repo_root, source_root)
 
 
 if __name__ == "__main__":

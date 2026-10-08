@@ -30,17 +30,24 @@ Validate every profile before operating one:
 make validate-preview-runtime
 ```
 
-Start the current Client Review Portal profile with a unique request id:
+Read the current owner projection, then start the Client Review Portal profile
+with that exact reviewed state and a unique request id:
 
 ```bash
+PROFILE=records/prototype-preview-profiles/client-review-portal.yaml
+EXPECTED="$(python3 scripts/prototype_preview.py status --profile "$PROFILE")"
 python3 scripts/prototype_preview.py start \
-  --profile records/prototype-preview-profiles/client-review-portal.yaml \
-  --request-id operator-start-001
+  --profile "$PROFILE" \
+  --request-id operator-start-001 \
+  --expected-state "$EXPECTED"
 ```
 
 The same request id replays the original receipt. Reusing it for another
 action fails closed. The command returns a digest-bound receipt and stores only
 runtime metadata beneath the operator's runtime directory, outside the repo.
+The owner compares the expected instance, runtime state, profile digest, source
+digest, and source revision while holding the same lock used for mutation. A
+changed state is rejected before any action.
 
 Inspect the safe projection or prove exact operating readback:
 
@@ -54,12 +61,16 @@ python3 scripts/prototype_preview.py proof \
 Restart or stop with new request ids:
 
 ```bash
+EXPECTED="$(python3 scripts/prototype_preview.py status --profile "$PROFILE")"
 python3 scripts/prototype_preview.py restart \
-  --profile records/prototype-preview-profiles/client-review-portal.yaml \
-  --request-id operator-restart-001
+  --profile "$PROFILE" \
+  --request-id operator-restart-001 \
+  --expected-state "$EXPECTED"
+EXPECTED="$(python3 scripts/prototype_preview.py status --profile "$PROFILE")"
 python3 scripts/prototype_preview.py stop \
-  --profile records/prototype-preview-profiles/client-review-portal.yaml \
-  --request-id operator-stop-001
+  --profile "$PROFILE" \
+  --request-id operator-stop-001 \
+  --expected-state "$EXPECTED"
 ```
 
 `status` is read-only. `proof` verifies the current process, exact profile,
@@ -72,6 +83,9 @@ satisfied.
 
 - A non-loopback profile, public ingress, external network use, real data, or
   mutable boundary is invalid.
+- A dirty checkout, untracked served file, ignored served file, or symlinked
+  served file is rejected before status, mutation, or proof can claim the
+  reviewed source revision.
 - A stale PID or health mismatch is reported as `stale`; commands do not kill
   an unverified process.
 - A port conflict fails start and points to the operator-private runtime log.

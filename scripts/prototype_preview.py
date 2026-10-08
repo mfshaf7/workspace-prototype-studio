@@ -27,6 +27,11 @@ def build_parser() -> argparse.ArgumentParser:
         command = commands.add_parser(name, help=f"{name} one Preview Runtime")
         command.add_argument("--profile", type=Path, required=True)
         command.add_argument("--request-id", required=True)
+        command.add_argument(
+            "--expected-state",
+            required=True,
+            help="JSON projection reviewed immediately before this command",
+        )
     server = commands.add_parser("serve", help=argparse.SUPPRESS)
     server.add_argument("--profile", type=Path, required=True)
     server.add_argument("--instance-id", required=True)
@@ -50,7 +55,14 @@ def main() -> int:
             elif args.command == "proof":
                 output = runtime.proof()
             else:
-                output = runtime.command(args.command, args.request_id)
+                try:
+                    expected_state = json.loads(args.expected_state)
+                except json.JSONDecodeError as error:
+                    raise PreviewError(
+                        "expected_state_invalid",
+                        "expected state must be valid JSON",
+                    ) from error
+                output = runtime.command(args.command, args.request_id, expected_state)
     except (OSError, PreviewError) as error:
         code = error.code if isinstance(error, PreviewError) else "io_error"
         print(json.dumps({"status": "rejected", "code": code, "message": str(error)}, sort_keys=True))
