@@ -83,7 +83,7 @@ class ProposalTargetApplicationTest(unittest.TestCase):
                 "record_version": "version-19",
                 "projection_state": "current",
                 "status": "accepted",
-                "handoff_packet_ref": "proposal-packet:851",
+                "handoff_packet_ref": "proposal-handoff:idea-851:version-19",
                 "handoff_packet_digest": PACKET_DIGEST,
                 "route": {
                     "target": "prototype",
@@ -125,7 +125,10 @@ class ProposalTargetApplicationTest(unittest.TestCase):
         self.assertEqual(record["lifecycle"], "exploring")
         self.assertEqual(record["landing_state"], "captured")
         self.assertEqual(record["next_action"], "prototype-landing")
-        self.assertEqual(record["proposal"]["handoff_packet_ref"], "proposal-packet:851")
+        self.assertEqual(
+            record["proposal"]["handoff_packet_ref"],
+            "proposal-handoff:idea-851:version-19",
+        )
         self.assertEqual(record["entry_packet"]["ingress_class"], "proposal-routed")
         self.assertEqual(record["entry_packet"]["suggestions"]["name"], "Proposal 851 Prototype")
         self.assertIsNone(record["entry_packet"]["suggestions"]["objective"])
@@ -199,6 +202,11 @@ class ProposalTargetApplicationTest(unittest.TestCase):
         wrong_record = self.request()
         wrong_record["source"]["record_ref"] = "openproject://work_packages/852"
         cases.append((wrong_record, "proposal_identity_mismatch"))
+        wrong_handoff = self.request()
+        wrong_handoff["source"]["handoff_packet_ref"] = (
+            "proposal-handoff:idea-852:version-19"
+        )
+        cases.append((wrong_handoff, "proposal_identity_mismatch"))
         wrong_custody = self.request()
         wrong_custody["source"]["route"]["source_custody"] = {
             "classification": "existing-repo",

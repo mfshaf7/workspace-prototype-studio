@@ -26,6 +26,10 @@ from packages.prototype_delivery_packet.contract import (
 CONTRACT_DIR = Path("contracts/proposal-target-application")
 CAPTURE_DIR = Path("records/prototype-captures")
 SAFE_SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+LEGACY_PACKET_REF = re.compile(r"^proposal-packet:([1-9][0-9]*)$")
+HANDOFF_PACKET_REF = re.compile(
+    r"^proposal-handoff:idea-([1-9][0-9]*):version-[1-9][0-9]*$"
+)
 SCHEMA_BY_TYPE = {
     "proposal-prototype-application": "request.schema.json",
     "proposal-routed-prototype-capture": "record.schema.json",
@@ -139,7 +143,9 @@ def _request_ref(request: dict[str, Any]) -> dict[str, str]:
 def _validate_request_semantics(request: dict[str, Any]) -> None:
     proposal_number = request["source"]["proposal_id"].removeprefix("idea-")
     record_number = request["source"]["record_ref"].rsplit("/", 1)[-1]
-    packet_number = request["source"]["handoff_packet_ref"].removeprefix("proposal-packet:")
+    packet_ref = request["source"]["handoff_packet_ref"]
+    packet_match = LEGACY_PACKET_REF.fullmatch(packet_ref) or HANDOFF_PACKET_REF.fullmatch(packet_ref)
+    packet_number = packet_match.group(1) if packet_match else ""
     expected_prototype = f"prototype:proposal-{proposal_number}"
     application_parts = request["application_id"].split(":")
     if proposal_number != record_number or proposal_number != packet_number:
