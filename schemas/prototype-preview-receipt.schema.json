@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://workspace.local/schemas/prototype-preview-receipt.schema.json",
+  "title": "Prototype Preview Runtime command receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "request_id",
+    "action",
+    "profile_id",
+    "prototype_id",
+    "profile_digest",
+    "source_digest",
+    "source_revision",
+    "before_state",
+    "after_state",
+    "outcome",
+    "completed_at",
+    "receipt_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "receipt_id": {"type": "string", "pattern": "^prototype-preview-receipt:[a-f0-9]{24}$"},
+    "request_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$"},
+    "action": {"enum": ["start", "restart", "stop"]},
+    "profile_id": {"type": "string"},
+    "prototype_id": {"type": "string"},
+    "profile_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "source_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "source_revision": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+    "before_state": {"enum": ["stopped", "running", "stale"]},
+    "after_state": {"enum": ["stopped", "running", "stale"]},
+    "outcome": {"const": "applied"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "receipt_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}
+  }
+}

@@ -72,6 +72,27 @@
       "fidelity": "real-git",
       "conformance_binding": "none",
       "timeout_seconds": 60
+    },
+    {
+      "id": "prototype-preview-operating-proof",
+      "kind": "runtime_and_live",
+      "name": "Prototype Preview Runtime operating readback",
+      "executable": "python3",
+      "args": [
+        "scripts/prototype_preview.py",
+        "--repo-root",
+        ".",
+        "proof",
+        "--profile",
+        "records/prototype-preview-profiles/client-review-portal.yaml"
+      ],
+      "fidelity": "live-backend",
+      "conformance_binding": "matching-fidelity",
+      "conformance_case_ids": [
+        "case:preview-runtime-operating-negative",
+        "case:preview-runtime-operating-positive"
+      ],
+      "timeout_seconds": 60
     }
   ]
 }

@@ -1,6 +1,24 @@
 schema_version: 1
+profile_id: client-review-portal
 prototype_id: prototype:client-review-portal
-status: draft
+status: active
 support_profile: interactive
 preview_mode: static
-runtime_activation: false
+runtime_activation: true
+runtime:
+  bind_host: 127.0.0.1
+  port: 18191
+  source_root: prototypes/client-review-portal
+  health_path: /__preview/health
+boundary:
+  visibility_tier: private-internal
+  data_mode: synthetic
+  mutation_boundary: none
+  persistence_model: runtime-metadata-only
+  public_ingress: false
+  external_network: false
+lifecycle:
+  cleanup_owner: Workspace Prototype Studio
+  ttl_seconds: 14400
+  retirement_rule: Stop the local process and retain only digest-bound command receipts.
+  promotion_path: Graduate source before any shared, client-facing, stage, or production runtime.

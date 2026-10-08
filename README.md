@@ -56,6 +56,10 @@ creation. See [docs/proposal-target-application.md](docs/proposal-target-applica
 Candidate and Baseline Promotion use the separate deterministic maturity owner
 command. See [docs/prototype-maturity.md](docs/prototype-maturity.md).
 
+Local incubation previews use the Studio-owned, loopback-only Preview Runtime.
+Its profiles, lifecycle commands, safe projection, and proof receipts are
+documented in [docs/devint-prototype-preview.md](docs/devint-prototype-preview.md).
+
 ## Security Baseline
 
 The security review baseline for this lane is maintained in
