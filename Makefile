@@ -1,6 +1,6 @@
-.PHONY: test validate validate-registry validate-proposal-target validate-landing validate-maturity validate-closure validate-governance-console-architecture
+.PHONY: test validate validate-registry validate-proposal-target validate-landing validate-maturity validate-closure validate-preview-runtime validate-governance-console-architecture
 
-validate: test validate-registry validate-proposal-target validate-landing validate-maturity validate-closure validate-governance-console-architecture
+validate: test validate-registry validate-proposal-target validate-landing validate-maturity validate-closure validate-preview-runtime validate-governance-console-architecture
 
 test:
 	python3 -m unittest discover -s tests
@@ -19,6 +19,9 @@ validate-maturity:
 
 validate-closure:
 	python3 scripts/prototype_closure.py --repo-root . validate-all
+
+validate-preview-runtime:
+	python3 scripts/prototype_preview.py --repo-root . validate-all
 
 validate-governance-console-architecture:
 	python3 scripts/validate_governance_console_architecture.py
