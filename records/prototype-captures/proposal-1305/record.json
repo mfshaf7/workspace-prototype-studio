@@ -1,0 +1,59 @@
+{
+  "application_ref": {
+    "digest": "sha256:abe70203e27a81ddf8edc9839461d872c00869f83b52ece05352fc6866fd6bc1",
+    "id": "proposal-prototype-application:proposal-1305:1305"
+  },
+  "artifact_type": "proposal-routed-prototype-capture",
+  "captured_at": "2026-10-16T04:51:08.447Z",
+  "entry_packet": {
+    "artifact_type": "prototype-entry-packet",
+    "captured_at": "2026-10-16T04:51:08.447Z",
+    "constraints": [
+      {
+        "code": "proposal-route",
+        "detail": "target=prototype"
+      },
+      {
+        "code": "source-custody",
+        "detail": "classification=new-repo-required;repository_mode=new;repository_gate_state=resolved"
+      }
+    ],
+    "entry_id": "prototype-entry:proposal-routed:proposal-1305",
+    "ingress_class": "proposal-routed",
+    "packet_digest": "sha256:622e6470f480b50d586a45f65a74dd98da89466f081966d0c6c9f654b3d9f423",
+    "requested_by": "operator-orchestration-service",
+    "schema_version": 1,
+    "source": {
+      "authority": "workspace-proposals",
+      "digest": "sha256:ad479fcc9e3e383fd42c6dd9aec13b146746ce46febba9e99f443fce6d32249b",
+      "ref": "openproject://work_packages/1305",
+      "revision": "version-4"
+    },
+    "suggestions": {
+      "name": "Proposal 1305 Prototype",
+      "objective": null,
+      "support_profile": null
+    }
+  },
+  "landing_state": "captured",
+  "lifecycle": "exploring",
+  "next_action": "prototype-landing",
+  "proposal": {
+    "handoff_packet_digest": "sha256:ad479fcc9e3e383fd42c6dd9aec13b146746ce46febba9e99f443fce6d32249b",
+    "handoff_packet_ref": "proposal-handoff:idea-1305:version-3",
+    "proposal_id": "idea-1305",
+    "record_ref": "openproject://work_packages/1305",
+    "record_version": "version-4",
+    "route": {
+      "source_custody": {
+        "classification": "new-repo-required",
+        "repository_gate_state": "resolved",
+        "repository_mode": "new"
+      },
+      "target": "prototype"
+    }
+  },
+  "prototype_id": "prototype:proposal-1305",
+  "record_ref": "record://prototype-captures/proposal-1305",
+  "schema_version": 2
+}

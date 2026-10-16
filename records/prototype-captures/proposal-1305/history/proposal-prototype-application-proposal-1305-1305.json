@@ -1,0 +1,40 @@
+{
+  "application_id": "proposal-prototype-application:proposal-1305:1305",
+  "artifact_type": "proposal-prototype-application",
+  "authorization": {
+    "authority": "operator-orchestration-service",
+    "decision": "approved",
+    "receipt_ref": "oos://proposal-target-authorizations/e32da6e409c4634185eafa09c92370e3a64378c91ffb86477c7ab941c7e0c474"
+  },
+  "request_digest": "sha256:abe70203e27a81ddf8edc9839461d872c00869f83b52ece05352fc6866fd6bc1",
+  "requested_at": "2026-10-16T04:51:08.447Z",
+  "schema_version": 2,
+  "source": {
+    "authority": "workspace-proposals",
+    "handoff_packet_digest": "sha256:ad479fcc9e3e383fd42c6dd9aec13b146746ce46febba9e99f443fce6d32249b",
+    "handoff_packet_ref": "proposal-handoff:idea-1305:version-3",
+    "projection_state": "current",
+    "proposal_id": "idea-1305",
+    "record_ref": "openproject://work_packages/1305",
+    "record_version": "version-4",
+    "route": {
+      "source_custody": {
+        "classification": "new-repo-required",
+        "repository_gate_state": "resolved",
+        "repository_mode": "new"
+      },
+      "target": "prototype"
+    },
+    "status": "accepted"
+  },
+  "source_branch": "proposal-target/011b7fe996060c3279abafb8600ff173719af5b458859a769de126b0914b342f",
+  "target": {
+    "expected_state": {
+      "record_digest": null,
+      "record_present": false,
+      "registry_digest": "sha256:50f343d0c7ae4ef08100cd799a4a3c88bc4a905db6f028c9f568eecef83f3d7a",
+      "source_revision": "2af8cfb95d40536ca8d50fbb5163e49df26c628e"
+    },
+    "prototype_id": "prototype:proposal-1305"
+  }
+}
