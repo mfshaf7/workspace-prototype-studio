@@ -1,0 +1,29 @@
+{
+  "apply_digest": "sha256:915efdf5148ec38670f20222f5db6238b8cfd54cc2adc55f653767c83befa17d",
+  "apply_id": "prototype-landing-apply:proposal-1305:17922501474041",
+  "artifact_type": "prototype-landing-apply",
+  "correlation_id": "correlation:proposal-1305:17922501474041",
+  "expected_state": {
+    "record_present": false,
+    "registry_digest": "sha256:50f343d0c7ae4ef08100cd799a4a3c88bc4a905db6f028c9f568eecef83f3d7a",
+    "source_revision": "14dfcb5fad6272eabdc3edde55c1c26b017a4f3f"
+  },
+  "idempotency_key": "landing:proposal-1305:17922501474041",
+  "operator_approval_ref": "console://prototype-landing/approvals/prototype-landing-request%3Aproposal-1305%3A17922501474041",
+  "plan_ref": {
+    "digest": "sha256:b12249cd2d67a66875536a8a206c33e079911a0eb366b638c5e9bc1b52ce7fdf",
+    "id": "prototype-landing-plan:proposal-1305:17922501474041"
+  },
+  "prototype_id": "prototype:proposal-1305",
+  "readiness_ref": {
+    "digest": "sha256:c7823efaae7751f1a304a0ddb53ba67745449ca8dd14b61e67e1a7b4bedfceb2",
+    "id": "prototype-landing-readiness:proposal-1305:17922501474041"
+  },
+  "request_ref": {
+    "digest": "sha256:cfd7abcf5be60e48c966cb566b048fb54b99e1ded5bb28931e5b470a934f67de",
+    "id": "prototype-landing-request:proposal-1305:17922501474041"
+  },
+  "requested_at": "2026-10-17T15:15:52.755Z",
+  "schema_version": 1,
+  "source_branch": "prototype-landing/e0273892229cce964046527e2e471f17c0fcaffd63e66e42735ca87c967d225b"
+}
