@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://workspace.local/schemas/prototype-preview-draft.schema.json",
+  "title": "Non-executable Prototype Landing preview draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "prototype_id", "status", "support_profile", "preview_mode", "runtime_activation"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "prototype_id": {"type": "string", "pattern": "^prototype:[a-z0-9][a-z0-9._-]*$"},
+    "status": {"const": "draft"},
+    "support_profile": {"enum": ["simple", "interactive", "local-runtime", "external-dependency", "existing-source-review", "custom"]},
+    "preview_mode": {"enum": ["none", "static", "local-dev-server", "local-backend-stub", "prototype-devint"]},
+    "runtime_activation": {"const": false}
+  }
+}
