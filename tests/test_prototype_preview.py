@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import shutil
 import socket
 import subprocess
 import tempfile
@@ -13,6 +14,7 @@ from pathlib import Path
 import yaml
 
 from packages.prototype_preview.runtime import (
+    LANDING_DRAFT_SCHEMA,
     PROFILE_SCHEMA,
     PreviewError,
     PreviewRuntime,
@@ -42,8 +44,56 @@ class PrototypePreviewProfileTests(unittest.TestCase):
     def test_repository_profiles_are_valid_and_registry_bound(self) -> None:
         self.assertEqual(
             validate_profiles(REPO_ROOT),
-            ["records/prototype-preview-profiles/client-review-portal.yaml"],
+            sorted(path.relative_to(REPO_ROOT).as_posix()
+                   for path in (REPO_ROOT / "records/prototype-preview-profiles").glob("*.yaml")),
         )
+
+    def test_landing_draft_schema_is_closed_and_non_activating(self) -> None:
+        draft = {"schema_version": 1, "prototype_id": "prototype:sample-tool",
+                 "status": "draft", "support_profile": "interactive",
+                 "preview_mode": "static", "runtime_activation": False}
+        validator = _validator(REPO_ROOT, LANDING_DRAFT_SCHEMA)
+        _validate(validator, draft, "valid inert draft")
+        denied = [{**draft, "runtime_activation": True}, {**draft, "status": "active"},
+                  {**draft, "support_profile": "unknown"}, {**draft, "preview_mode": "public"},
+                  {**draft, "prototype_id": "prototype:../escape"},
+                  {**draft, "runtime": {"port": 18191}}]
+        denied.extend({key: value for key, value in draft.items() if key != missing}
+                      for missing in draft)
+        for candidate in denied:
+            with self.subTest(candidate=candidate), self.assertRaises(PreviewError):
+                _validate(validator, candidate, "invalid inert draft")
+
+    def test_landing_draft_vocabulary_matches_its_producer_contract(self) -> None:
+        draft = json.loads((REPO_ROOT / LANDING_DRAFT_SCHEMA).read_text())
+        request = json.loads((REPO_ROOT / "contracts/prototype-landing/prototype-landing-request.schema.json").read_text())
+        self.assertEqual(draft["properties"]["support_profile"]["enum"],
+                         request["$defs"]["supportProfile"]["enum"])
+        self.assertEqual(draft["properties"]["preview_mode"]["enum"],
+                         request["properties"]["setup"]["properties"]["preview_mode"]["enum"])
+        self.assertEqual(draft["properties"]["prototype_id"],
+                         request["properties"]["prototype"]["properties"]["id"])
+
+    def test_landing_draft_requires_known_prototype_and_exact_filename(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            shutil.copytree(REPO_ROOT / "schemas", root / "schemas")
+            shutil.copyfile(REPO_ROOT / "prototypes.yaml", root / "prototypes.yaml")
+            profiles = root / "records/prototype-preview-profiles"
+            profiles.mkdir(parents=True)
+            draft = {"schema_version": 1, "prototype_id": "prototype:unknown-tool",
+                     "status": "draft", "support_profile": "interactive",
+                     "preview_mode": "static", "runtime_activation": False}
+            path = profiles / "unknown-tool.yaml"
+            path.write_text(yaml.safe_dump(draft), encoding="utf-8")
+            with self.assertRaises(PreviewError) as unknown:
+                validate_profiles(root)
+            self.assertEqual(unknown.exception.code, "prototype_unknown")
+            draft["prototype_id"] = "prototype:client-review-portal"
+            path.write_text(yaml.safe_dump(draft), encoding="utf-8")
+            with self.assertRaises(PreviewError) as mismatch:
+                validate_profiles(root)
+            self.assertEqual(mismatch.exception.code, "source_identity_mismatch")
 
     def test_profile_schema_denies_boundary_expansion(self) -> None:
         profile = yaml.safe_load(PROFILE_PATH.read_text(encoding="utf-8"))

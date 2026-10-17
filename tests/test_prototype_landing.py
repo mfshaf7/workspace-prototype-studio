@@ -20,6 +20,7 @@ from packages.prototype_landing.landing import (
     validate_contract_bundle,
     validate_landing_records,
 )
+from packages.prototype_preview.runtime import PreviewError, PreviewRuntime, validate_profiles
 
 
 SOURCE_ROOT = Path(__file__).resolve().parents[1]
@@ -309,6 +310,20 @@ class PrototypeLandingTest(unittest.TestCase):
         self.assertEqual(receipt["outcome"], "prepared")
         self.assertEqual(receipt["source_result"]["revision"], result.source_revision)
         self.assertEqual(validate_landing_records(self.root), [self.root / "records/prototype-landings/sample-tool/record.json"])
+    def test_landing_preview_draft_is_valid_but_not_runnable(self) -> None:
+        self.apply(self.artifacts(mutation_set=(
+            "registry-record", "prototype-docs", "prototype-source",
+            "preview-profile-draft", "validation-plan",
+        )))
+        # Exercise the actual producer output against its adjacent consumer,
+        # not a separately hand-authored runnable-profile fixture.
+        draft = self.root / "records/prototype-preview-profiles/sample-tool.yaml"
+        self.assertEqual(validate_profiles(self.root), [draft.relative_to(self.root).as_posix()])
+        with mock.patch("packages.prototype_preview.runtime.subprocess.Popen") as spawn:
+            with self.assertRaises(PreviewError):
+                PreviewRuntime(self.root, draft, Path(self.temp.name) / "runtime")
+            spawn.assert_not_called()
+        self.assertFalse((Path(self.temp.name) / "runtime").exists())
 
     def test_exact_replay_does_not_mutate_source(self) -> None:
         artifacts = self.artifacts()

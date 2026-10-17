@@ -24,6 +24,15 @@ does not grant stage, production, release, or security acceptance.
 
 ## Primary operator commands
 
+Landing may first emit an inert six-field draft under the profile directory.
+`schemas/prototype-preview-draft.schema.json` validates that closed metadata
+shape, its known Prototype and matching filename. It does not assign a port,
+authorize serving source, or admit a runtime. `validate-all` validates both
+these drafts and fully configured profiles; it does not skip draft validation.
+Runtime commands still require the separate complete profile schema and its
+existing activation and boundary checks. A valid Landing draft is not a
+runnable profile, Preview proof, or product implementation.
+
 Validate every profile before operating one:
 
 ```bash

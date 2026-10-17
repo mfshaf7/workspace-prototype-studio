@@ -25,6 +25,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 PROFILE_DIR = Path("records/prototype-preview-profiles")
 PROFILE_SCHEMA = Path("schemas/prototype-preview-profile.schema.json")
+LANDING_DRAFT_SCHEMA = Path("schemas/prototype-preview-draft.schema.json")
 PROJECTION_SCHEMA = Path("schemas/prototype-preview-projection.schema.json")
 RECEIPT_SCHEMA = Path("schemas/prototype-preview-receipt.schema.json")
 REQUEST_ID_CHARS = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._:-")
@@ -610,15 +611,29 @@ class PreviewRuntime:
 
 def validate_profiles(repo_root: Path) -> list[str]:
     profile_validator = _validator(repo_root, PROFILE_SCHEMA)
+    draft_validator = _validator(repo_root, LANDING_DRAFT_SCHEMA)
     registry = yaml.safe_load((repo_root / "prototypes.yaml").read_text(encoding="utf-8"))
     prototypes = {f"prototype:{item['id']}": item for item in registry.get("prototypes", [])}
     validated: list[str] = []
     for path in sorted((repo_root / PROFILE_DIR).glob("*.yaml")):
         profile = yaml.safe_load(path.read_text(encoding="utf-8"))
-        _validate(profile_validator, profile, f"preview profile {path.name}")
+        landing_draft = (
+            isinstance(profile, dict)
+            and profile.get("status") == "draft"
+            and "profile_id" not in profile
+        )
+        _validate(draft_validator if landing_draft else profile_validator,
+                  profile, f"preview profile {path.name}")
         prototype = prototypes.get(profile["prototype_id"])
         if prototype is None:
             raise PreviewError("prototype_unknown", f"{path.name} references an unknown Prototype")
+        if landing_draft:
+            if path.stem != profile["prototype_id"].removeprefix("prototype:"):
+                raise PreviewError("source_identity_mismatch", f"{path.name} draft differs from its Prototype")
+            # Landing records setup intent only. Runtime construction continues
+            # to require the full, unchanged executable-profile schema.
+            validated.append(path.relative_to(repo_root).as_posix())
+            continue
         source_root = (repo_root / profile["runtime"]["source_root"]).resolve()
         if not source_root.is_dir() or source_root.is_symlink():
             raise PreviewError("source_unavailable", f"{path.name} source root is unavailable")
