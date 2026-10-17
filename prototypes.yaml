@@ -100,3 +100,29 @@ prototypes:
   closure_event_ref: record://prototype-closure/client-review-portal/history/prototype-closure:client-review-portal:0001
   delivery_target_ref: openproject://work_packages/1152
   accepted_delivery_target_receipt_ref: oos://receipts/prototype-delivery-application/8b52379809a6047e8e817314760a514b0793b107d15b10322bc98ba8ccd8656f
+- id: proposal-1305
+  name: Console To-do
+  objective: Explore a simple responsive to-do web app with add, complete and delete
+    actions and browser-local reload persistence. Use synthetic local tasks only;
+    no identity, remote backend, external network, or public deployment. Preserve
+    Proposal 1305 and the reserved durable repository for the later Prototype-to-Delivery
+    handoff.
+  lifecycle: exploring
+  project_phase: incubating
+  owner: Workspace Prototype Studio
+  linked_records:
+  - role: landing-record
+    ref: record://prototype-landings/proposal-1305
+    system: prototype-studio
+    level: record
+    label: Prototype Landing source record
+  visibility_tier: private-internal
+  data_mode: synthetic
+  mutation_boundary: prototype-local
+  landing_record_ref: record://prototype-landings/proposal-1305
+  paths:
+    brief: docs/prototypes/proposal-1305/brief.md
+    backlog: docs/prototypes/proposal-1305/backlog.md
+    design_profile: docs/prototypes/proposal-1305/design-profile.md
+    change_log: docs/prototypes/proposal-1305/change-log.md
+    decision_log: docs/prototypes/proposal-1305/decision-log.md
