@@ -44,6 +44,13 @@ Authoritative references for this repo are `workspace-governance`,
 make validate
 ```
 
+The owner [evidence profile](contracts/delivery-art-work-session/evidence-profile.json)
+exposes the existing complete test suite for both real-Git and bounded
+sandbox-runtime cases. Its Preview tests exercise isolated loopback processes,
+HTTP controls and source/receipt denials; they do not prove a deployed app or
+approve a design baseline. The separately declared Preview operating command
+still requires an actual admitted runtime and its owner receipt.
+
 New Prototype records use the deterministic Landing owner command rather than
 manual template and registry copying. See
 [docs/prototype-landing.md](docs/prototype-landing.md).
