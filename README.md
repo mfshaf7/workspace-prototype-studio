@@ -67,6 +67,14 @@ Local incubation previews use the Studio-owned, loopback-only Preview Runtime.
 Its profiles, lifecycle commands, safe projection, and proof receipts are
 documented in [docs/devint-prototype-preview.md](docs/devint-prototype-preview.md).
 
+Read-only source/design inspection and deterministic Preview file preparation
+are documented in [Prototype Authoring Owner Preparation](docs/prototype-authoring.md).
+They reuse the existing source executor for later application and the existing
+Delivery packet emitter for handoff. They do not themselves enable model/source
+actions or make the Console journey operational. Synthetic browser-local Preview
+storage is explicit and remains separate from read-only server operation and
+durable product custody.
+
 ## Security Baseline
 
 The security review baseline for this lane is maintained in

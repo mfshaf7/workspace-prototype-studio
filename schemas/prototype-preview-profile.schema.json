@@ -49,11 +49,15 @@
       "properties": {
         "visibility_tier": {"enum": ["private-internal", "operator-review"]},
         "data_mode": {"enum": ["mock", "synthetic"]},
-        "mutation_boundary": {"const": "none"},
-        "persistence_model": {"const": "runtime-metadata-only"},
+        "mutation_boundary": {"enum": ["none", "prototype-local"]},
+        "persistence_model": {"enum": ["runtime-metadata-only", "browser-local"]},
         "public_ingress": {"const": false},
         "external_network": {"const": false}
-      }
+      },
+      "oneOf": [
+        {"properties": {"mutation_boundary": {"const": "none"}, "persistence_model": {"const": "runtime-metadata-only"}}},
+        {"properties": {"mutation_boundary": {"const": "prototype-local"}, "persistence_model": {"const": "browser-local"}}}
+      ]
     },
     "lifecycle": {
       "type": "object",

@@ -33,6 +33,24 @@ Runtime commands still require the separate complete profile schema and its
 existing activation and boundary checks. A valid Landing draft is not a
 runnable profile, Preview proof, or product implementation.
 
+The [owner preparation procedure](prototype-authoring.md) renders a complete
+profile change plan without writing or activating it. Registry and runtime
+enforce the same exact Prototype/source/boundary binding. The schema admits
+only two persistence tuples: `none`/`runtime-metadata-only`, or
+`prototype-local`/`browser-local`, with mock/synthetic internal review and no
+backend writes or external services. Mixed tuples and durable/backend storage
+remain invalid. The new tuple needs exact-source Security acceptance and
+coherent commissioning; the older none-only decision does not authorize it.
+
+Browser-local data belongs to its reviewed browser origin, not the server's
+runtime metadata or a durable backend. It survives reload and may survive
+server stop/restart; stopping does not erase browser storage. The runtime proof
+tests actual denied HTTP write methods and reports its storage declaration,
+but explicitly sets `browser_operation_proven: false`. Only a separate real
+browser exercise can prove app persistence. CSP disables connections/forms/
+workers and external subresources for this static profile; it is not a general
+hostile-JavaScript browser/network sandbox or private-client isolation proof.
+
 Validate every profile before operating one:
 
 ```bash
@@ -90,8 +108,8 @@ satisfied.
 
 ## Failure and recovery
 
-- A non-loopback profile, public ingress, external network use, real data, or
-  mutable boundary is invalid.
+- A non-loopback profile, public ingress, configured external services, real
+  data, server mutation or persistence outside the two admitted tuples is invalid.
 - A dirty checkout, untracked served file, ignored served file, or symlinked
   served file is rejected before status, mutation, or proof can claim the
   reviewed source revision.

@@ -16,7 +16,7 @@ import urllib.request
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Iterator
 
 import yaml
@@ -200,6 +200,31 @@ def _default_state_root() -> Path:
     return Path(tempfile.gettempdir()) / f"workspace-prototype-studio-{os.getuid()}" / "preview-runtime"
 
 
+def _profile_source(repo_root: Path, profile: dict[str, Any], prototypes=None) -> Path:
+    """The runtime and repository validator enforce the same registry binding."""
+    if prototypes is None:
+        registry = yaml.safe_load((repo_root / "prototypes.yaml").read_text(encoding="utf-8"))
+        prototypes = {f"prototype:{item['id']}": item for item in registry.get("prototypes", [])}
+    prototype = prototypes.get(profile["prototype_id"])
+    if prototype is None:
+        raise PreviewError("prototype_unknown", "profile references an unknown Prototype")
+    source = PurePosixPath(profile["runtime"]["source_root"])
+    if (source.parts[:2] != ("prototypes", profile["prototype_id"].removeprefix("prototype:"))
+            or any(part in {".", ".."} for part in source.parts)):
+        raise PreviewError("source_identity_mismatch", "source root differs from the selected Prototype")
+    # Check lexical parents before resolving; resolution must not hide a link.
+    if any((repo_root / Path(*source.parts[:index])).is_symlink()
+           for index in range(1, len(source.parts) + 1)):
+        raise PreviewError("source_path_denied", "preview source roots cannot traverse symlinks")
+    source_root = (repo_root / source).resolve()
+    if not source_root.is_dir():
+        raise PreviewError("source_unavailable", "preview source root is unavailable")
+    for field in ("data_mode", "visibility_tier", "mutation_boundary"):
+        if profile["boundary"][field] != prototype[field]:
+            raise PreviewError("boundary_mismatch", "profile boundary differs from the Prototype registry")
+    return source_root
+
+
 class PreviewRuntime:
     def __init__(self, repo_root: Path, profile_path: Path, state_root: Path | None = None):
         self.repo_root = repo_root.resolve()
@@ -216,7 +241,7 @@ class PreviewRuntime:
         _validate(_validator(self.repo_root, PROFILE_SCHEMA), profile, "preview profile")
         self.profile = profile
         self.profile_digest = _digest(profile)
-        self.source_root = (self.repo_root / profile["runtime"]["source_root"]).resolve()
+        self.source_root = _profile_source(self.repo_root, profile)
         try:
             self.source_root.relative_to((self.repo_root / "prototypes").resolve())
         except ValueError as error:
@@ -577,11 +602,26 @@ class PreviewRuntime:
         if len(matching) != 1:
             raise PreviewError("receipt_readback_invalid", "latest receipt is absent or ambiguous")
         self._validate_receipt(matching[0])
+        server_mutation_denied = True
+        for method in ("POST", "PUT", "PATCH", "DELETE"):
+            request = urllib.request.Request(
+                f"http://127.0.0.1:{self.profile['runtime']['port']}{self.profile['runtime']['health_path']}",
+                data=b"", method=method,
+            )
+            try:
+                with urllib.request.urlopen(request, timeout=2):
+                    server_mutation_denied = False
+            except urllib.error.HTTPError as error:
+                server_mutation_denied = server_mutation_denied and error.code in {405, 501}
+            except OSError:
+                server_mutation_denied = False
+        browser_local = self.profile["boundary"]["persistence_model"] == "browser-local"
         negative_checks = {
             "non_loopback_bind_denied": self.profile["runtime"]["bind_host"] == "127.0.0.1",
             "public_ingress_denied": self.profile["boundary"]["public_ingress"] is False,
-            "external_network_denied": self.profile["boundary"]["external_network"] is False,
-            "mutation_denied": self.profile["boundary"]["mutation_boundary"] == "none",
+            ("external_services_not_configured" if browser_local else "external_network_denied"):
+                self.profile["boundary"]["external_network"] is False,
+            ("server_mutation_denied" if browser_local else "mutation_denied"): server_mutation_denied,
             "real_data_denied": self.profile["boundary"]["data_mode"] in {"mock", "synthetic"},
             "maturity_overclaim_denied": projection["maturity_claim"] == "prototype-preview-only",
             "stale_source_denied": health["source_digest"] == projection["source_digest"],
@@ -604,6 +644,12 @@ class PreviewRuntime:
                 "receipt-custody-readback",
             ],
             "negative_checks": negative_checks,
+            **({"browser_persistence": {
+                "model": "browser-local", "storage_scope": "reviewed-browser-origin",
+                "server_persistence": "runtime-metadata-only", "cleared_by_stop": False,
+                "browser_operation_proven": False,
+                "network_isolation_claim": "not-a-general-browser-sandbox",
+            }} if browser_local else {}),
             "security_gate": "gate:preview-runtime-operating-acceptance",
             "security_decision": "evaluated-by-oos-before-operating-ready",
         }
@@ -634,20 +680,7 @@ def validate_profiles(repo_root: Path) -> list[str]:
             # to require the full, unchanged executable-profile schema.
             validated.append(path.relative_to(repo_root).as_posix())
             continue
-        source_root = (repo_root / profile["runtime"]["source_root"]).resolve()
-        if not source_root.is_dir() or source_root.is_symlink():
-            raise PreviewError("source_unavailable", f"{path.name} source root is unavailable")
-        if profile["boundary"]["data_mode"] != prototype["data_mode"]:
-            raise PreviewError("boundary_mismatch", f"{path.name} data mode differs from the Prototype registry")
-        if profile["runtime"]["source_root"].split("/")[:2] != [
-            "prototypes",
-            profile["prototype_id"].removeprefix("prototype:"),
-        ]:
-            raise PreviewError("source_identity_mismatch", f"{path.name} source root differs from its Prototype")
-        if profile["boundary"]["visibility_tier"] != prototype["visibility_tier"]:
-            raise PreviewError("boundary_mismatch", f"{path.name} visibility differs from the Prototype registry")
-        if profile["boundary"]["mutation_boundary"] != prototype["mutation_boundary"]:
-            raise PreviewError("boundary_mismatch", f"{path.name} mutation boundary differs from the Prototype registry")
+        _profile_source(repo_root, profile, prototypes)
         validated.append(path.relative_to(repo_root).as_posix())
     return validated
 
@@ -673,7 +706,7 @@ def serve(runtime: PreviewRuntime, instance_id: str) -> None:
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(length))
             self.send_header("Cache-Control", "no-store")
-            self.send_header("Content-Security-Policy", "default-src 'self'; object-src 'none'; frame-ancestors 'none'")
+            self.send_header("Content-Security-Policy", "default-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'; worker-src 'none'; object-src 'none'; frame-ancestors 'none'")
             self.send_header("Referrer-Policy", "no-referrer")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("X-Frame-Options", "DENY")
