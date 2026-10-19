@@ -24,6 +24,11 @@ The command and its source/readiness/workflow boundaries are documented in
 [Prototype Landing](prototype-landing.md). Direct edits to create a new
 Prototype are a recovery path, not the normal operator workflow.
 
+After Landing, use [Prototype Authoring Owner Preparation](prototype-authoring.md)
+for exact committed source/design scope and deterministic Preview file plans.
+These read-only owner commands require the later OOS/Console/executor and
+Security/Platform path; their existence is not full Console authoring availability.
+
 ## Lifecycle Transitions
 
 `exploring` means the idea is being sketched and can be deleted without formal
