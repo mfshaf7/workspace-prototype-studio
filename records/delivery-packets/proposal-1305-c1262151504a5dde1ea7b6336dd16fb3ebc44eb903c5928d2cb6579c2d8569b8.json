@@ -1,0 +1,70 @@
+{
+  "content": {
+    "authorization": {
+      "decision": "approved",
+      "decision_ref": "record://prototypes/proposal-1305/decision-log",
+      "operator_id": "operator:mfshaf7"
+    },
+    "baseline": {
+      "baseline_id": "proposal-1305-baseline-17925220777621",
+      "record_digest": "sha256:f283e2acb7f81c71bd11330ace589746a7127dc3935c58b432b5c2cf31ff354e",
+      "record_ref": "record://design-baselines/proposal-1305-baseline-17925220777621",
+      "schema_version": 1,
+      "version": "proposal-1305-baseline-17925220777621@sha256:f283e2acb7f81c71bd11330ace589746a7127dc3935c58b432b5c2cf31ff354e"
+    },
+    "custody": {
+      "classification": "new-repo-required",
+      "owner": "console-todo-1275",
+      "rationale": "Existing canonical repository provisioning reserved GitHub repository1421451929 in mfshaf7-workspace. README-only public synthetic demonstration; source admission, bootstrap and app transfer remain separate pending Delivery work, not implied by provisioned custody.",
+      "repository_gate_state": "resolved",
+      "repository_mode": "new",
+      "source_ref": "repo://mfshaf7-workspace/console-todo-1275"
+    },
+    "evidence_refs": [
+      "record://prototype-landings/proposal-1305",
+      "record://prototype-maturity/proposal-1305/candidate",
+      "repo://workspace-prototype-studio/docs/prototypes/proposal-1305/design-profile.md",
+      "repo://workspace-prototype-studio/prototypes.yaml"
+    ],
+    "intent": "governed-delivery",
+    "posture": {
+      "data_mode": "synthetic",
+      "mutation_boundary": "prototype-local",
+      "visibility_tier": "private-internal"
+    },
+    "rationale": "The accepted Prototype is deliberately simple but real. Continue the same identity and exact reviewed source through governed Delivery rather than regenerating the app. Native emission binds the actual approved Baseline and Git source tree; no accounts, backend, external API, private-client qualification or public hosting is claimed.",
+    "source": {
+      "kind": "prototype",
+      "lifecycle": "baseline-approved",
+      "owner": "Workspace Prototype Studio",
+      "prototype_id": "proposal-1305",
+      "record_ref": "record://prototypes/proposal-1305",
+      "record_version": "5142d21f18ae51e09bb35749387e680e64c23bfc",
+      "repository": "workspace-prototype-studio",
+      "revision": {
+        "base_commit": "5142d21f18ae51e09bb35749387e680e64c23bfc",
+        "head_commit": "5142d21f18ae51e09bb35749387e680e64c23bfc",
+        "ref": "HEAD",
+        "tree": "d0877a749ef82b8731b18c06bc6339f3380177d0"
+      }
+    },
+    "target": "workspace-delivery-art",
+    "work": {
+      "excluded_scope": [
+        "No accounts, backend storage, external APIs, real client data, public hosting, new model authoring or autonomous governance approval."
+      ],
+      "included_scope": [
+        "Preserve the approved static app: add, complete/uncomplete, delete, reload persistence, accessible responsive UI and explicit storage-failure behavior."
+      ],
+      "objective": "Carry the reviewed browser-local to-do app from its accepted Prototype into the reserved durable owner repository, validate the same app, and prove Console-operated custody and local runtime.",
+      "remaining_work": [
+        "Bootstrap and admit the reserved source owner; import exact approved source through Delivery, validate/review/merge, record actual post-merge owner acceptance and prove applicable local runtime and lifecycle recovery."
+      ],
+      "title": "Little List \u2014 durable owner delivery"
+    }
+  },
+  "packet_digest": "sha256:c1262151504a5dde1ea7b6336dd16fb3ebc44eb903c5928d2cb6579c2d8569b8",
+  "packet_id": "proposal-1305-c1262151504a5dde1ea7b6336dd16fb3ebc44eb903c5928d2cb6579c2d8569b8",
+  "packet_ref": "record://delivery-packets/proposal-1305-c1262151504a5dde1ea7b6336dd16fb3ebc44eb903c5928d2cb6579c2d8569b8",
+  "schema_version": 1
+}
