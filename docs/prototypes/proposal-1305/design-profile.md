@@ -1,67 +1,82 @@
-# Prototype Design Profile
+# Console To-do design profile
 
 ## Status
 
-`exploration`
+Exploration. Source delivery is not Candidate or Baseline approval.
 
 ## Audience And Context
 
-Describe who uses the interface and where they use it.
+One person keeping a small list in their browser. The synthetic demonstration
+proves add, complete, delete and reload persistence, not multi-user/cloud sync.
 
 ## Visual Direction
 
-Describe the desired feeling, density, and visual language.
+Quiet paper-like workspace: warm off-white canvas, white list, deep ink text
+and muted teal actions. One task-entry form, list and remaining count.
+No marketing panels, fake tasks, dashboard chrome or external assets.
 
 ## Typography
 
-State the intended typography direction.
+System sans-serif stack; comfortable 16px controls and task text. No font download.
 
 ## Color And Status Semantics
 
-Define the palette and what each status color means.
+Dark ink for content; teal for actions and checked state. Completion also has a
+checked checkbox and struck-through text. Textual storage errors and visible
+focus rings; color is never the only signal.
 
-## Pattern Inventory
+## Pattern Inventory And Source Shape
 
-- Panel:
-- Tray:
-- Table:
-- Modal:
-- Form:
-- Status card:
-- Action control:
+Intentionally tiny standalone app. No existing shared primitive lives in this
+source home. App-local HTML/CSS was explained before implementation; do not
+couple it to Console/Teras or introduce a framework.
+
+- index.html: semantic shell, labeled form, list and live status.
+- styles.css: app-local shell, form, rows and responsive states.
+- tasks.mjs: pure validation/transitions and bounded storage codec.
+- app.mjs: DOM events/rendering and browser-local persistence adapter.
+- tests/tasks.test.mjs: actual domain/codec behavior, not fixture app success.
 
 ## Responsive Policy
 
-State whether desktop, tablet, and mobile are supported, deferred, or blocked.
+360px mobile through desktop; single-column max-width layout. Task text wraps;
+controls remain visible. At least 44px touch targets and visible keyboard focus.
+Respect reduced motion; retain native checkbox and keyboard semantics.
 
 ## Data And Source Of Truth
 
-Define whether the view uses mock, synthetic, real-readonly, or real-mutable
-data and where live data will come from later.
+Synthetic tasks only. Browser localStorage is the sole persistent store.
+The server serves read-only static files. No account, API, analytics, external
+service or public hosting. Public source and local storage are not private/client
+data controls. Start empty; do not seed artificial demonstration tasks.
 
 ## Interaction Rules
 
-Describe selection, expansion, guard, confirmation, and unsafe-exit behavior.
+Enter adds non-blank text. Checkboxes toggle completion; labeled delete buttons
+remove the selected task. Keep focus usable after updates. Persist an accepted
+edit before reporting success; storage failure leaves the visible list unchanged
+and reports failure. Retain invalid saved data rather than silently overwriting
+it. Render task text as text, never HTML.
 
 ## Exploration Validation Contract
 
-- During `exploration`, do not run full builds after ordinary visual tweaks.
-- Keep the running preview server alive unless it is unhealthy or dependencies,
-  config, or startup shape changed.
-- Use focused typecheck for React, state, data-shape, or TypeScript changes.
-- Use the smallest relevant Playwright or manual preview check for changed
-  operator controls.
-- Reserve full build or repo-wide validation for baseline, dependency,
-  deployment, or explicit completion checkpoints.
+Run node --test prototypes/proposal-1305/tests/tasks.test.mjs for domain/codec
+changes. Focused real-browser checks cover keyboard entry, complete/delete,
+reload, malicious text, storage rejection, mobile overflow and screenshots.
+Run Studio make validate before landing. Actual Console-managed Preview and
+lifecycle verification follow reviewed merge; engineering proof is not acceptance.
 
 ## Baseline Review States
 
-- Empty:
-- Loading:
-- Ready:
-- Warning:
-- Blocked:
-- Error:
-- Offline:
-- Selected:
-- Modal open:
+- Empty: honest empty state, entry affordance, no invented tasks.
+- Ready: active/completed rows, long text wrapping, remaining count.
+- Error/blocked: visible storage/invalid-data error; no false save success.
+- Offline: no external dependencies; the loaded app remains browser-local.
+- Keyboard/mobile: labeled controls, focus, no horizontal overflow.
+- Modal/backend stale/loading: not applicable to this static local app.
+
+## Authorship And Proof Limit
+
+Operator requested Codex-authored code, not local-model drafting. Reviewed
+external source is an explicit Console exercise input. Console must prove
+Preview, approval and Delivery; this does not prove autonomous model app quality.
