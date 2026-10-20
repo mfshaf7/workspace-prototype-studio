@@ -1,6 +1,26 @@
 schema_version: 1
+profile_id: proposal-1305
 prototype_id: prototype:proposal-1305
-status: draft
+status: active
 support_profile: interactive
 preview_mode: static
-runtime_activation: false
+runtime_activation: true
+runtime:
+  bind_host: 127.0.0.1
+  port: 3345
+  source_root: prototypes/proposal-1305
+  health_path: /__preview/health
+boundary:
+  visibility_tier: private-internal
+  data_mode: synthetic
+  mutation_boundary: prototype-local
+  persistence_model: browser-local
+  public_ingress: false
+  external_network: false
+lifecycle:
+  cleanup_owner: Workspace Prototype Studio
+  ttl_seconds: 7200
+  retirement_rule: Stop on owner request or retirement; browser-origin data requires
+    explicit separate cleanup.
+  promotion_path: Use approved Baseline and the existing Delivery packet before durable
+    owner graduation.
