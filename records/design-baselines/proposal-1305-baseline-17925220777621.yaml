@@ -1,0 +1,49 @@
+schema_version: 1
+prototype_id: proposal-1305
+baseline_id: proposal-1305-baseline-17925220777621
+approved_on: '2026-10-20'
+approved_by: governance-operations-console
+decision: approved
+title: "Little List \u2014 synthetic browser-local baseline"
+statement: 'Accept the reviewed static to-do app: accessible add, complete/uncomplete,
+  delete and browser-local reload persistence. No accounts, backend, external APIs
+  or public hosting. Continue the same source into its reserved Delivery owner.'
+accepted_summary: Static browser app with accessible add, completion, deletion and
+  localStorage reload persistence.
+excluded_summary: No accounts, backend storage, external APIs, client-sensitive data,
+  public hosting or new AI authoring.
+missing_evidence_disposition: 'Actual Console-started Studio Preview at 88ca4cd49cd0f12e70209e368cf4e7564c1aab85:
+  seven browser checks passed, including persistence, cross-tab coherence, inert text
+  and 360px layout. Storage fault cases used explicit synthetic injection. Preview
+  owner receipt preview-runtime://receipts/prototype-preview-receipt:90e613460946cad34b530441
+  binds health/source, not app behavior. Codex-authored external app; no model generation
+  or private-client qualification. Full Delivery proof remains pending.'
+issue_and_risk_disposition: No observed app issue blocks this bounded local baseline.
+  Identity, backend storage, external integration and public deployment remain excluded;
+  Delivery acceptance, owner custody and runtime evidence are separate unfinished
+  gates.
+source_refs:
+- record://prototype-landings/proposal-1305
+- repo://workspace-prototype-studio/prototypes.yaml
+- repo://workspace-prototype-studio/docs/prototypes/proposal-1305/design-profile.md
+- record://prototype-maturity/proposal-1305/candidate
+art_refs: []
+security_review_refs: []
+evidence_refs:
+- record://prototype-landings/proposal-1305
+- record://prototype-maturity/proposal-1305/candidate
+- repo://workspace-prototype-studio/docs/prototypes/proposal-1305/design-profile.md
+- repo://workspace-prototype-studio/prototypes.yaml
+constraints:
+- No accounts, backend storage, external APIs, client-sensitive data, public hosting
+  or new AI authoring.
+- 'Actual Console-started Studio Preview at 88ca4cd49cd0f12e70209e368cf4e7564c1aab85:
+  seven browser checks passed, including persistence, cross-tab coherence, inert text
+  and 360px layout. Storage fault cases used explicit synthetic injection. Preview
+  owner receipt preview-runtime://receipts/prototype-preview-receipt:90e613460946cad34b530441
+  binds health/source, not app behavior. Codex-authored external app; no model generation
+  or private-client qualification. Full Delivery proof remains pending.'
+- No observed app issue blocks this bounded local baseline. Identity, backend storage,
+  external integration and public deployment remain excluded; Delivery acceptance,
+  owner custody and runtime evidence are separate unfinished gates.
+- Baseline approval is local Prototype maturity only and grants no cross-domain authority.

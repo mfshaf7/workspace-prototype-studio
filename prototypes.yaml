@@ -107,7 +107,7 @@ prototypes:
     no identity, remote backend, external network, or public deployment. Preserve
     Proposal 1305 and the reserved durable repository for the later Prototype-to-Delivery
     handoff.
-  lifecycle: candidate
+  lifecycle: baseline-approved
   project_phase: incubating
   owner: Workspace Prototype Studio
   linked_records:
@@ -121,6 +121,11 @@ prototypes:
     system: prototype-studio
     level: record
     label: Prototype Candidate Promotion record
+  - role: baseline-record
+    ref: record://design-baselines/proposal-1305-baseline-17925220777621
+    system: prototype-studio
+    level: record
+    label: "Little List \u2014 synthetic browser-local baseline"
   visibility_tier: private-internal
   data_mode: synthetic
   mutation_boundary: prototype-local
@@ -132,3 +137,4 @@ prototypes:
     change_log: docs/prototypes/proposal-1305/change-log.md
     decision_log: docs/prototypes/proposal-1305/decision-log.md
   candidate_record_ref: record://prototype-maturity/proposal-1305/candidate
+  design_baseline_ref: record://design-baselines/proposal-1305-baseline-17925220777621
