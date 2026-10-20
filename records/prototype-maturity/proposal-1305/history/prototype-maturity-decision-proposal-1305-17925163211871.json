@@ -1,0 +1,32 @@
+{
+  "artifact_type": "prototype-maturity-decision",
+  "blocker": null,
+  "correlation_id": "prototype-maturity:proposal-1305:17925163211871",
+  "decided_at": "2026-10-20T17:12:07.376Z",
+  "decision": "promote-candidate",
+  "decision_digest": "sha256:e82c553d0c174fb22f08ac6ab46921738f99814c6012e465f291c1903ddcac8e",
+  "decision_id": "prototype-maturity-decision:proposal-1305:17925163211871",
+  "expected_state": {
+    "lifecycle": "exploring",
+    "record_digest": "sha256:f767e0f141e5f3fc53ca9d0bb652d6e08fac04f1d1f17c70983989e5e2a0eb0a",
+    "source_revision": "ab8e4cc0934632c9ab8384720e049050fba82096"
+  },
+  "idempotency_key": "prototype-maturity:proposal-1305:17925163211871",
+  "operator_ref": "governance-operations-console",
+  "packet_ref": {
+    "digest": "sha256:05e0676f38e3d3997af6ae5402c057c808a6d49d7a725ef20bcc36c266f04f9b",
+    "id": "prototype-maturity-packet:proposal-1305:17925163211871"
+  },
+  "prototype_id": "prototype:proposal-1305",
+  "readiness_ref": {
+    "digest": "sha256:bca35c1f8901f36e2b99a33f3b085a7b186d02bd43df4974db30ad241631c002",
+    "id": "prototype-maturity-readiness:proposal-1305:17925163211871"
+  },
+  "request_ref": {
+    "digest": "sha256:ecb7130b777bcc6cec701f091f641b34d2072b61d9334c7681a96ab17114bdfe",
+    "id": "prototype-maturity-request:proposal-1305:17925163211871"
+  },
+  "schema_version": 1,
+  "source_branch": "prototype-maturity/4054c74eb7fd185764ce287d0228f07689126e4fb18173f0ba21fdf1211fc142",
+  "transition": "candidate-promotion"
+}
