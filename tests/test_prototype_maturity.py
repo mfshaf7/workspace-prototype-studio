@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import shutil
 import subprocess
@@ -17,6 +18,7 @@ from packages.prototype_maturity.maturity import (
     current_state,
     readback_maturity,
     validate_contract_bundle,
+    validate_artifact,
     validate_maturity_records,
 )
 from scripts.validate_prototype_studio import validate_registry
@@ -61,6 +63,67 @@ def ref(artifact: dict, id_field: str, digest_field: str) -> dict:
 
 
 class PrototypeMaturityTest(unittest.TestCase):
+    @staticmethod
+    def wire_bind(payload: dict, field: str) -> dict:
+        body = {key: value for key, value in payload.items() if key != field}
+        raw = json.dumps(body, ensure_ascii=False, allow_nan=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        return {**body, field: "sha256:" + hashlib.sha256(raw).hexdigest()}
+
+    def unicode_artifacts(self, transition="candidate-promotion"):
+        request, packet, readiness, decision = self.artifacts(transition)
+        values = request["inputs"]["editable_values"]
+        values["baseline-title" if transition == "baseline-promotion" else "prototype-objective"] = "Résumé — 日本語 😀 e\u0301\tline\nnext"
+        request = self.wire_bind(request, "request_digest")
+        packet["request_ref"] = ref(request, "request_id", "request_digest")
+        packet = self.wire_bind(packet, "packet_digest")
+        readiness["request_ref"] = packet["request_ref"]
+        readiness["packet_ref"] = ref(packet, "packet_id", "packet_digest")
+        readiness = self.wire_bind(readiness, "readiness_digest")
+        decision["request_ref"] = packet["request_ref"]
+        decision["packet_ref"] = readiness["packet_ref"]
+        decision["readiness_ref"] = ref(readiness, "readiness_id", "readiness_digest")
+        return request, packet, readiness, self.wire_bind(decision, "decision_digest")
+
+    def test_utf8_wire_artifacts_are_accepted_without_ascii_only_input_restriction(self):
+        for artifact in self.unicode_artifacts():
+            validate_artifact(self.root, artifact)
+        request = self.unicode_artifacts()[0]
+        request["inputs"]["editable_values"]["prototype-objective"] += "tampered"
+        with self.assertRaisesRegex(PacketError, "digest does not match"):
+            validate_artifact(self.root, request)
+
+    def test_unicode_registry_state_uses_same_utf8_digest_as_wire_authority(self):
+        registry = yaml.safe_load((self.root / "prototypes.yaml").read_text())
+        registry["prototypes"][0]["name"] = "日本語 — 😀"
+        self.write_yaml(self.root / "prototypes.yaml", registry)
+        self.git("add", ".")
+        self.git("commit", "-m", "Unicode synthetic source name")
+        expected = self.wire_bind(registry["prototypes"][0], "record_digest")["record_digest"]
+        self.assertEqual(current_state(self.root, "prototype:sample")["expected_state"]["record_digest"], expected)
+        result = self.apply(self.unicode_artifacts())
+        self.assertEqual(result.status, "prepared")
+
+    def test_unicode_candidate_baseline_replay_and_merged_readback_preserve_wire_binding(self):
+        for transition in ("candidate-promotion", "baseline-promotion"):
+            with self.subTest(transition=transition):
+                artifacts = self.unicode_artifacts(transition)
+                self.assertEqual(self.apply(artifacts, transition + ".json").status, "prepared")
+                before = self.git("diff")
+                self.assertEqual(self.apply(artifacts, transition + "-replay.json").status, "replayed")
+                self.assertEqual(before, self.git("diff"))
+                emitted = json.loads((self.output / (transition + ".json")).read_text())
+                self.assertEqual(emitted["result_digest"], self.wire_bind(emitted, "result_digest")["result_digest"])
+                validate_maturity_records(self.root)
+                self.git("add", ".")
+                self.git("commit", "-m", transition)
+                self.git("switch", "main")
+                self.git("merge", "--ff-only", "feature/sample-maturity")
+                observed = readback_maturity(repo_root=self.root, decision=artifacts[-1], output_path=self.output / (transition + "-readback.json"), observed_at=NOW)
+                validate_artifact(self.root, observed)
+                self.assertEqual(observed["readback_digest"], self.wire_bind(observed, "readback_digest")["readback_digest"])
+                self.assertEqual(observed["observed_lifecycle"], "candidate" if transition == "candidate-promotion" else "baseline-approved")
+                self.git("switch", "feature/sample-maturity")
+
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name) / "studio"

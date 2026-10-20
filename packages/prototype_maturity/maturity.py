@@ -19,7 +19,6 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from packages.prototype_delivery_packet.contract import (
     PacketError,
-    content_digest,
     load_json,
     load_yaml,
     validate_schema,
@@ -52,6 +51,18 @@ ID_FIELD_BY_TYPE = {
     "prototype-maturity-readback": "readback_id",
     "prototype-maturity-receipt": "receipt_id",
 }
+def maturity_digest(payload: Any) -> str:
+    """Match the existing Console/OOS/WGCF UTF-8 Maturity wire contract.
+
+    Delivery packets deliberately retain their separate ASCII-escaped codec.
+    """
+    try:
+        encoded = json.dumps(payload, ensure_ascii=False, allow_nan=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    except (TypeError, ValueError, UnicodeError) as error:
+        raise PacketError("artifact_invalid", "Maturity canonical JSON is invalid") from error
+    return "sha256:" + hashlib.sha256(encoded).hexdigest()
+
+
 CHECK_IDS = {
     "request-integrity",
     "lifecycle-source-state",
@@ -233,7 +244,7 @@ def validate_artifact(repo_root: Path, artifact: dict[str, Any]) -> None:
     )
     digest_field = DIGEST_FIELD_BY_TYPE[artifact_type]
     body = {key: value for key, value in artifact.items() if key != digest_field}
-    if artifact[digest_field] != content_digest(body):
+    if artifact[digest_field] != maturity_digest(body):
         raise PacketError("artifact_digest_mismatch", f"{artifact_type} digest does not match its content")
 
 
@@ -460,7 +471,7 @@ def current_state(repo_root: Path, prototype_id: str) -> dict[str, Any]:
         "prototype_id": prototype_id,
         "expected_state": {
             "source_revision": current_head(repo_root),
-            "record_digest": content_digest(item),
+            "record_digest": maturity_digest(item),
             "lifecycle": item["lifecycle"],
         },
     }
@@ -473,7 +484,7 @@ def _require_expected_state(repo_root: Path, request: dict[str, Any]) -> tuple[d
     _require_landed(repo_root, item, slug)
     actual = {
         "source_revision": current_head(repo_root),
-        "record_digest": content_digest(item),
+        "record_digest": maturity_digest(item),
         "lifecycle": item["lifecycle"],
     }
     if actual != request["expected_state"]:
@@ -491,7 +502,7 @@ def _yaml_bytes(payload: dict[str, Any]) -> bytes:
 
 def _with_digest(payload: dict[str, Any], field: str) -> dict[str, Any]:
     result = copy.deepcopy(payload)
-    result[field] = content_digest(result)
+    result[field] = maturity_digest(result)
     return result
 
 
@@ -613,7 +624,7 @@ def _require_candidate_record(repo_root: Path, item: dict[str, Any], slug: str) 
     ]
     if (
         candidate.get("prototype_id") != f"prototype:{slug}"
-        or candidate.get("record_digest") != content_digest(body)
+        or candidate.get("record_digest") != maturity_digest(body)
         or len(links) != 1
     ):
         raise PacketError("candidate_evidence_invalid", "candidate record and registry linkage disagree")
@@ -638,7 +649,7 @@ def _prepare_writes(
     if transition == "candidate-promotion":
         candidate = _candidate_record(request, packet, readiness, decision)
         candidate_stem = (
-            f"candidate-{content_digest(request).removeprefix('sha256:')[:12]}"
+            f"candidate-{maturity_digest(request).removeprefix('sha256:')[:12]}"
             if (repo_root / MATURITY_RECORD_DIR / slug / "candidate.json").exists()
             else "candidate"
         )
@@ -813,7 +824,7 @@ def _source_result(
             "outcome": outcome,
             "source_branch": branch,
             "source_revision": revision,
-            "record_digest": content_digest(item),
+            "record_digest": maturity_digest(item),
             "changed_paths": changed_paths,
             "next_action": next_action,
         },
@@ -993,7 +1004,7 @@ def readback_maturity(
             raise PacketError("source_history_invalid", "expected source revision is not an ancestor of merged source")
         authority_state = "merged-authority"
     else:
-        if item["lifecycle"] != profile["source"] or content_digest(item) != expected["record_digest"]:
+        if item["lifecycle"] != profile["source"] or maturity_digest(item) != expected["record_digest"]:
             raise PacketError("unchanged_readback_invalid", "non-promotion readback does not preserve source state")
         authority_state = "unchanged-authority"
 
@@ -1010,7 +1021,7 @@ def readback_maturity(
             "decision": decision["decision"],
             "authority_state": authority_state,
             "source_revision": head,
-            "record_digest": content_digest(item),
+            "record_digest": maturity_digest(item),
             "observed_lifecycle": item["lifecycle"],
             "record_ref": f"record://prototype-registry/{slug}",
         },
@@ -1045,7 +1056,7 @@ def validate_maturity_records(repo_root: Path) -> list[Path]:
             label=str(candidate_path.relative_to(repo_root)),
         )
         body = {key: value for key, value in candidate.items() if key != "record_digest"}
-        if candidate["record_digest"] != content_digest(body):
+        if candidate["record_digest"] != maturity_digest(body):
             raise PacketError("source_record_invalid", f"{candidate_path} digest does not match")
         slug = _slug(candidate["prototype_id"])
         if not re.fullmatch(r"candidate(?:-[0-9a-f]{12})?\.json", candidate_path.name) or candidate_path.parent.name != slug:
