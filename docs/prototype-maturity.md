@@ -1,5 +1,13 @@
 # Prototype Maturity Source Operations
 
+Maturity artifacts, Candidate records and source-state digests use the existing
+UTF-8 canonical JSON shared by Console, OOS and WGCF: sorted keys, compact
+separators and the artifact's own digest omitted. Unicode operator text is not
+ASCII-normalized, escaped for hashing or transliterated. File serialization may
+escape characters without changing the parsed content being hashed. This is
+separate from Prototype Delivery packets' existing ASCII-escaped canonical
+codec; do not change historical Delivery digests to repair Maturity.
+
 Workspace Prototype Studio owns the source transitions from `exploring` to
 `candidate` and from `candidate` to `baseline-approved`. The governing contract
 and artifact schemas are synchronized under `contracts/prototype-maturity/`.
