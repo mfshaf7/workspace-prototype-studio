@@ -126,6 +126,11 @@ prototypes:
     system: prototype-studio
     level: record
     label: "Little List \u2014 synthetic browser-local baseline"
+  - role: delivery-packet
+    ref: record://delivery-packets/proposal-1305-c1262151504a5dde1ea7b6336dd16fb3ebc44eb903c5928d2cb6579c2d8569b8
+    system: prototype-studio
+    level: record
+    label: Prototype Delivery packet
   visibility_tier: private-internal
   data_mode: synthetic
   mutation_boundary: prototype-local
@@ -138,3 +143,4 @@ prototypes:
     decision_log: docs/prototypes/proposal-1305/decision-log.md
   candidate_record_ref: record://prototype-maturity/proposal-1305/candidate
   design_baseline_ref: record://design-baselines/proposal-1305-baseline-17925220777621
+  delivery_packet_ref: record://delivery-packets/proposal-1305-c1262151504a5dde1ea7b6336dd16fb3ebc44eb903c5928d2cb6579c2d8569b8
