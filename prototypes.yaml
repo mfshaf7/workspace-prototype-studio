@@ -107,7 +107,7 @@ prototypes:
     no identity, remote backend, external network, or public deployment. Preserve
     Proposal 1305 and the reserved durable repository for the later Prototype-to-Delivery
     handoff.
-  lifecycle: graduating
+  lifecycle: graduated
   project_phase: delivery-governed
   owner: Workspace Prototype Studio
   linked_records:
@@ -144,7 +144,10 @@ prototypes:
   candidate_record_ref: record://prototype-maturity/proposal-1305/candidate
   design_baseline_ref: record://design-baselines/proposal-1305-baseline-17925220777621
   delivery_packet_ref: record://delivery-packets/proposal-1305-c1262151504a5dde1ea7b6336dd16fb3ebc44eb903c5928d2cb6579c2d8569b8
-  source_custody: incubation-repo
-  closure_event_ref: record://prototype-closure/proposal-1305/history/prototype-closure:proposal-1305:0001
+  source_custody: dedicated-owner-repo
+  closure_event_ref: record://prototype-closure/proposal-1305/history/prototype-closure:proposal-1305:0002
   delivery_target_ref: openproject://work_packages/1306
   accepted_delivery_target_receipt_ref: oos://receipts/prototype-delivery-application/281fd8decf32daf5dc49692f41e1cf057b14fcc8c5ec7099bdaab8efe14e5ab1
+  graduation_ref: record://prototype-closure/proposal-1305/history/prototype-closure:proposal-1305:0002
+  durable_owner_ref: console-todo-1275
+  durable_repo_ref: repo://mfshaf7-workspace/console-todo-1275
