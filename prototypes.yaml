@@ -151,3 +151,28 @@ prototypes:
   graduation_ref: record://prototype-closure/proposal-1305/history/prototype-closure:proposal-1305:0002
   durable_owner_ref: console-todo-1275
   durable_repo_ref: repo://mfshaf7-workspace/console-todo-1275
+- id: source-editor-1323
+  name: "Source editor \u2014 acceptance notes"
+  objective: "Epic1323 real Console acceptance: create inert app/design help drafts,\
+    \ import UTF-8 source, amend and reload exact saved bytes, then cancel without\
+    \ applying source. No runtime, external data, product delivery or new business\
+    \ scope. Preserve UTF-8 text such as caf\xE9 and \u4F60\u597D."
+  lifecycle: exploring
+  project_phase: incubating
+  owner: Workspace Prototype Studio
+  linked_records:
+  - role: landing-record
+    ref: record://prototype-landings/source-editor-1323
+    system: prototype-studio
+    level: record
+    label: Prototype Landing source record
+  visibility_tier: private-internal
+  data_mode: synthetic
+  mutation_boundary: none
+  landing_record_ref: record://prototype-landings/source-editor-1323
+  paths:
+    brief: docs/prototypes/source-editor-1323/brief.md
+    backlog: docs/prototypes/source-editor-1323/backlog.md
+    design_profile: docs/prototypes/source-editor-1323/design-profile.md
+    change_log: docs/prototypes/source-editor-1323/change-log.md
+    decision_log: docs/prototypes/source-editor-1323/decision-log.md
