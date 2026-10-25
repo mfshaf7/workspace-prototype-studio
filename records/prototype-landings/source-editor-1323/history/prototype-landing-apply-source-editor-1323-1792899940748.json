@@ -1,0 +1,29 @@
+{
+  "apply_digest": "sha256:fb6ca9b6bbb6229941a5c3566998790dbf374f157b4f0b32a28e6b95e847483e",
+  "apply_id": "prototype-landing-apply:source-editor-1323:1792899940748",
+  "artifact_type": "prototype-landing-apply",
+  "correlation_id": "correlation:source-editor-1323:1792899940748",
+  "expected_state": {
+    "record_present": false,
+    "registry_digest": "sha256:9e01a343ef83d56a8e8248dabec0019bb5ba41cf75d863d6a6396e8b519d745a",
+    "source_revision": "84b7e7a596ce3d6f1c5853bbf1c348611ed9cdb6"
+  },
+  "idempotency_key": "landing:source-editor-1323:1792899940748",
+  "operator_approval_ref": "console://prototype-landing/approvals/prototype-landing-request%3Asource-editor-1323%3A1792899940748",
+  "plan_ref": {
+    "digest": "sha256:2cb86629c2d514822b85065aaca0c791e18c07d744128b30cc04286ab30eb3bd",
+    "id": "prototype-landing-plan:source-editor-1323:1792899940748"
+  },
+  "prototype_id": "prototype:source-editor-1323",
+  "readiness_ref": {
+    "digest": "sha256:4a4a108daaec4edf508771ee8f1790e543e26a810fb268bd519e56ef6dc08b39",
+    "id": "prototype-landing-readiness:source-editor-1323:1792899940748"
+  },
+  "request_ref": {
+    "digest": "sha256:acecd0150e409a6fa1993395815c89589057e91420999d3ef4bcd35c11ca6f2e",
+    "id": "prototype-landing-request:source-editor-1323:1792899940748"
+  },
+  "requested_at": "2026-10-25T03:48:09.250Z",
+  "schema_version": 1,
+  "source_branch": "prototype-landing/bd82bb849c6329e8186e67e8ad04d6ad330b295a5633371236513d8d5cdda147"
+}
