@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import os
 import shutil
@@ -291,6 +292,72 @@ class PrototypeLandingTest(unittest.TestCase):
             completed_at=NOW,
             **kwargs,
         )
+
+    @staticmethod
+    def native_wire_digest(value: dict) -> str:
+        # Console/OOS/WGCF Landing canonical bytes, independent of the owner codec.
+        body = json.dumps(value, ensure_ascii=False, allow_nan=False,
+                          sort_keys=True, separators=(",", ":")).encode("utf-8")
+        return "sha256:" + hashlib.sha256(body).hexdigest()
+
+    def native_unicode_artifacts(self) -> tuple[dict, dict, dict, dict, dict]:
+        entry, request, plan, readiness, apply = copy.deepcopy(self.artifacts())
+        def bind(row: dict, field: str) -> None:
+            row.pop(field, None)
+            row[field] = self.native_wire_digest(row)
+        entry["suggestions"]["name"] = "Notes — 你好 📝"
+        bind(entry, "packet_digest")
+        request["entry_packet_ref"] = ref(entry)
+        request["prototype"].update(name="Tâches — 你好 📝",
+                                    objective="Review privacy notes — keep source inert and preserve café text.")
+        bind(request, "request_digest")
+        plan["request_ref"] = ref(request)
+        bind(plan, "plan_digest")
+        readiness.update(request_ref=ref(request), plan_ref=ref(plan))
+        bind(readiness, "readiness_digest")
+        apply.update(request_ref=ref(request), plan_ref=ref(plan), readiness_ref=ref(readiness))
+        bind(apply, "apply_digest")
+        return entry, request, plan, readiness, apply
+
+    def test_native_readiness_and_preparation_agree_on_existing_unicode_registry(self) -> None:
+        registry = yaml.safe_load((self.root / "prototypes.yaml").read_text())
+        registry["studio"]["description"] = "Notes — 你好 📝"
+        self._write_yaml(self.root / "prototypes.yaml", registry)
+        self.git("add", ".")
+        self.git("commit", "-m", "Unicode source truth")
+        observed = current_state(self.root, "prototype:sample-tool")["expected_state"]
+        self.assertEqual(observed["registry_digest"], self.native_wire_digest(registry))
+        self.assertNotEqual(observed["registry_digest"], content_digest(registry))
+        # Other packet protocols retain their original ASCII-escaped bytes.
+        self.assertEqual(content_digest({"title": "Notes — 你好 📝"}),
+                         "sha256:5bfbc0508a95e54780915237bdb422190dbbde6c543e51559c8f96e27526fcbc")
+
+    def test_native_unicode_artifacts_apply_replay_and_readback_preserve_integrity(self) -> None:
+        artifacts = self.native_unicode_artifacts()
+        tampered = copy.deepcopy(artifacts)
+        tampered[1]["prototype"]["name"] += " changed"
+        before = self.git("status", "--porcelain")
+        with self.assertRaises(PacketError) as denied:
+            self.apply(tampered)
+        self.assertEqual(denied.exception.code, "artifact_digest_mismatch")
+        self.assertEqual(self.git("status", "--porcelain"), before)
+        result = self.apply(artifacts)
+        self.assertEqual(result.status, "prepared")
+        record = json.loads((self.root / "records/prototype-landings/sample-tool/record.json").read_text())
+        registry = yaml.safe_load((self.root / "prototypes.yaml").read_text())
+        self.assertEqual(record["name"], "Tâches — 你好 📝")
+        state = current_state(self.root, "prototype:sample-tool")["expected_state"]
+        self.assertEqual(state["record_digest"], self.native_wire_digest(record))
+        self.assertEqual(state["registry_digest"], self.native_wire_digest(registry))
+        for path, field in [(result.readback_path, "readback_digest"), (result.receipt_path, "receipt_digest")]:
+            emitted = json.loads(path.read_text())
+            claimed = emitted.pop(field)
+            self.assertEqual(claimed, self.native_wire_digest(emitted))
+        diff = self.git("diff")
+        replay = self.apply(artifacts, output_dir=Path(self.temp.name) / "unicode-replay")
+        self.assertEqual(replay.status, "replayed")
+        self.assertEqual(self.git("diff"), diff)
+        self.assertEqual(validate_landing_records(self.root), [self.root / "records/prototype-landings/sample-tool/record.json"])
 
     def test_create_prepares_registry_source_docs_and_receipt(self) -> None:
         result = self.apply(self.artifacts())

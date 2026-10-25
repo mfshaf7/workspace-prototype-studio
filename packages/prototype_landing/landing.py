@@ -19,11 +19,25 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from packages.prototype_delivery_packet.contract import (
     PacketError,
-    content_digest,
+    content_digest as packet_content_digest,
     load_json,
     load_yaml,
     validate_schema,
 )
+
+
+def landing_digest(payload: Any) -> str:
+    """Use the existing Console/OOS/WGCF Landing UTF-8 canonical bytes.
+
+    Imported manifests and unrelated Delivery/Closure contracts keep their
+    independently established codecs; do not rehash historical artifacts.
+    """
+    try:
+        encoded = json.dumps(payload, ensure_ascii=False, allow_nan=False,
+                             sort_keys=True, separators=(",", ":")).encode("utf-8")
+    except (TypeError, ValueError, UnicodeError) as error:
+        raise PacketError("artifact_invalid", "Landing canonical JSON is invalid") from error
+    return "sha256:" + hashlib.sha256(encoded).hexdigest()
 
 
 CONTRACT_DIR = Path("contracts/prototype-landing")
@@ -210,7 +224,7 @@ def _artifact_ref(artifact: dict[str, Any]) -> dict[str, str]:
 def _with_digest(payload: dict[str, Any]) -> dict[str, Any]:
     artifact_type = str(payload["artifact_type"])
     result = copy.deepcopy(payload)
-    result[DIGEST_FIELD_BY_TYPE[artifact_type]] = content_digest(result)
+    result[DIGEST_FIELD_BY_TYPE[artifact_type]] = landing_digest(result)
     return result
 
 
@@ -227,7 +241,7 @@ def validate_artifact(repo_root: Path, artifact: dict[str, Any]) -> None:
     )
     digest_field = DIGEST_FIELD_BY_TYPE[str(artifact_type)]
     body = {key: value for key, value in artifact.items() if key != digest_field}
-    if artifact[digest_field] != content_digest(body):
+    if artifact[digest_field] != landing_digest(body):
         raise PacketError("artifact_digest_mismatch", f"{artifact_type} digest does not match its content")
 
 
@@ -379,7 +393,7 @@ def imported_content_digest(source_root: Path) -> str:
         {"path": path.as_posix(), "sha256": hashlib.sha256(content).hexdigest(), "size": len(content)}
         for path, content in _source_files(source_root.resolve())
     ]
-    return content_digest(manifest)
+    return packet_content_digest(manifest)
 
 
 def _json_bytes(payload: dict[str, Any]) -> bytes:
@@ -688,8 +702,8 @@ def _build_outputs(
             "authority_state": "review-branch",
             "source_branch": branch,
             "source_revision": source_revision,
-            "registry_digest": content_digest(registry),
-            "record_digest": content_digest(record),
+            "registry_digest": landing_digest(registry),
+            "record_digest": landing_digest(record),
             "record": copy.deepcopy(record),
             "observed_at": now,
         }
@@ -713,8 +727,8 @@ def _build_outputs(
                 "repo": "workspace-prototype-studio",
                 "branch": branch,
                 "revision": source_revision,
-                "registry_digest": content_digest(registry),
-                "record_digest": content_digest(record),
+                "registry_digest": landing_digest(registry),
+                "record_digest": landing_digest(record),
             },
             "next_action": {"code": "review-source", "owner_ref": "operator-orchestration-service"},
             "correlation_id": request["correlation_id"],
@@ -791,7 +805,7 @@ def apply_landing(
 
         _require_clean_worktree(repo_root)
         registry = load_yaml(repo_root / "prototypes.yaml")
-        registry_digest = content_digest(registry)
+        registry_digest = landing_digest(registry)
         expected = apply["expected_state"]
         if expected["registry_digest"] != registry_digest:
             raise PacketError("source_state_stale", "Prototype registry digest differs from apply")
@@ -841,9 +855,9 @@ def current_state(repo_root: Path, prototype_id: str) -> dict[str, Any]:
     return {
         "prototype_id": prototype_id,
         "expected_state": {
-            "registry_digest": content_digest(registry),
+            "registry_digest": landing_digest(registry),
             "record_present": bool(matches or record is not None),
-            "record_digest": content_digest(record) if record is not None else None,
+            "record_digest": landing_digest(record) if record is not None else None,
             "source_revision": current_head(repo_root),
         },
     }
