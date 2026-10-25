@@ -65,6 +65,21 @@ Every Landing requires the registry and documentation outputs. New or imported
 Studio source also requires `prototype-source`. Reference-only custody cannot
 copy source or fixtures. A preview profile remains a non-activating draft.
 
+## Canonical text and stopped requests
+
+Landing artifacts, registry state, source records and emitted readbacks use the
+same compact, sorted, unescaped UTF-8 JSON as the native Console, OOS and WGCF
+Landing producers and consumers. Unicode names, objectives and existing registry
+text must not make unchanged source appear stale or invalidate a genuine native
+request. Exact content, expected state and artifact bindings are still checked;
+changing input without its exact corresponding digest remains rejected.
+
+Imported-file manifests and the separate Delivery/Closure protocols retain their
+own established codecs. A Landing correction does not rehash their records or
+alter historical artifacts. After an immutable request stops against obsolete
+source, retain its failure and prepare the normal explicit corrected request
+against current accepted source and state; do not edit its retained digests.
+
 ## Imported Source
 
 Imported content is untrusted. Calculate the bounded canonical digest before
