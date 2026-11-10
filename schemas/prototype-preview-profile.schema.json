@@ -59,6 +59,11 @@
         {"properties": {"mutation_boundary": {"const": "prototype-local"}, "persistence_model": {"const": "browser-local"}}}
       ]
     },
+    "embedding": {
+      "type": "object", "additionalProperties": false, "required": ["allowed_origins"],
+      "properties": {"allowed_origins": {"type": "array", "maxItems": 8, "uniqueItems": true,
+        "items": {"type": "string", "pattern": "^http://(?:localhost|127\\.0\\.0\\.1):[1-9][0-9]{3,4}$"}}}
+    },
     "lifecycle": {
       "type": "object",
       "additionalProperties": false,

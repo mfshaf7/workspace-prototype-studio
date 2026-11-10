@@ -124,3 +124,14 @@ satisfied.
 Security review of the exact Studio and Console revisions remains required by
 `gate:preview-runtime-operating-acceptance` before OOS accepts the Feature as
 operating-ready.
+
+## Optional Console embedding (unpublished extension)
+
+Profiles deny framing by default. After exact source/Security acceptance, an
+owner-reviewed profile can opt into `embedding.allowed_origins`, for example
+`["http://localhost:4317"]` for one local review Console. Use exact HTTP loopback
+origins with explicit ports; never use wildcards, paths or credentials. The safe
+projection reports this list. Profile digest changes require the normal reviewed
+restart; adding a browser frame does not apply an editor draft or grant source
+acceptance. No active profile is changed by this maintenance implementation.
+See [maintenance scope](console-preview-embedding-maintenance.md).

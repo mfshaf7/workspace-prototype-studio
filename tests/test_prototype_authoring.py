@@ -107,6 +107,25 @@ class PrototypeAuthoringTests(unittest.TestCase):
         self.assertTrue(all(value is False for value in first["authority"].values()))
         self.assertEqual(self._git("status", "--porcelain"), "")
 
+    def test_embedding_is_explicit_digest_bound_and_does_not_apply_or_start(self):
+        original = plan_preview(self.root, self._request())
+        self.assertNotIn("embedding", yaml.safe_load(original["changes"][0]["content"]))
+        request = self._request(embedding_origins=["http://localhost:4317"])
+        plan = plan_preview(self.root, request)
+        self.assertEqual(yaml.safe_load(plan["changes"][0]["content"])["embedding"],
+                         {"allowed_origins": request["embedding_origins"]})
+        self.assertNotEqual(original["request_digest"], plan["request_digest"])
+        self.assertNotEqual(original["plan_digest"], plan["plan_digest"])
+        self.assertEqual(plan, plan_preview(self.root, request))
+        self.assertTrue(all(value is False for value in plan["authority"].values()))
+        self.assertFalse((self.root / plan["changes"][0]["path"]).exists())
+        for origins in [["https://example.com"], ["http://localhost:4317/path"],
+                        ["http://localhost:80"], ["http://localhost:99999"],
+                        ["http://localhost:4317"] * 2]:
+            with self.subTest(origins=origins), self.assertRaises(PacketError):
+                plan_preview(self.root, self._request(embedding_origins=origins))
+        self.assertEqual(self._git("status", "--porcelain"), "")
+
     def test_existing_inert_draft_digest_is_bound_not_overwritten(self):
         path = self.root / "records/prototype-preview-profiles/sample-tool.yaml"
         path.parent.mkdir(parents=True)

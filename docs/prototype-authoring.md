@@ -102,3 +102,20 @@ temporary real-Git owner preparation and isolated loopback process proof.
 Run `make validate` from the clean committed owner head before landing. Tests
 do not write the real demo or create live lifecycle records. Browser-local
 add/complete/delete/reload operation remains separate actual Console proof.
+
+## Console embedding option
+
+Preview preparation accepts optional `embedding_origins`, a bounded list of
+exact HTTP localhost/127.0.0.1 Console origins with explicit unprivileged
+ports. The native plan writes these as `embedding.allowed_origins` in the
+existing profile. Omission preserves the browser-only profile and prior
+request shape. The profile choice is included in request/plan digests and
+requires the same source review, apply and merge as other profile settings.
+It grants neither model authority nor runtime activation.
+
+In the Console profile preparation form, choose Allow this Console to include
+the current origin automatically. A later profile/runtime reconciliation
+uses the existing owner controls. See
+[Preview runtime](devint-prototype-preview.md) for exact ancestor controls.
+This source extension remains pending composed Security acceptance and
+commissioning; no active profile is changed by implementing it.
