@@ -14,6 +14,7 @@
         "decision_ref": {"type": "string", "pattern": "^record://[A-Za-z0-9._:/-]+$", "maxLength": 512}
       }
     },
+    "embedding_origins": {"type": "array", "maxItems": 8, "uniqueItems": true, "items": {"type": "string", "pattern": "^http://(?:localhost|127\\.0\\.0\\.1):[1-9][0-9]{3,4}$"}},
     "port": {"type": "integer", "minimum": 1024, "maximum": 65535},
     "support_profile": {"enum": ["interactive", "unattended"]},
     "runtime_activation": {"type": "boolean"},

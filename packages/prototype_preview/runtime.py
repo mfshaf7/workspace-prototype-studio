@@ -13,6 +13,7 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
+from urllib.parse import urlsplit
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -225,6 +226,34 @@ def _profile_source(repo_root: Path, profile: dict[str, Any], prototypes=None) -
     return source_root
 
 
+def _embedding_origins(profile: dict[str, Any]) -> list[str]:
+    origins = profile.get("embedding", {}).get("allowed_origins", [])
+    for origin in origins:
+        try:
+            parsed = urlsplit(origin)
+            port = parsed.port
+            valid = (parsed.scheme == "http" and parsed.hostname in {"127.0.0.1", "localhost"}
+                     and port is not None and 1024 <= port <= 65535
+                     and origin == f"http://{parsed.hostname}:{port}"
+                     and not parsed.path and not parsed.query and not parsed.fragment)
+        except ValueError:
+            valid = False
+        if not valid:
+            raise PreviewError("embedding_origin_denied", "embedding requires exact HTTP loopback origins with an unprivileged port")
+    return list(origins)
+
+
+def _preview_security_headers(profile: dict[str, Any]) -> dict[str, str]:
+    origins = _embedding_origins(profile)
+    ancestors = " ".join(origins) if origins else "'none'"
+    result = {"Content-Security-Policy": "default-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'; worker-src 'none'; object-src 'none'; frame-ancestors " + ancestors}
+    if not origins:
+        result["X-Frame-Options"] = "DENY"
+    else:
+        result["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    return result
+
+
 class PreviewRuntime:
     def __init__(self, repo_root: Path, profile_path: Path, state_root: Path | None = None):
         self.repo_root = repo_root.resolve()
@@ -240,6 +269,7 @@ class PreviewRuntime:
             raise PreviewError("profile_invalid", "preview profile must contain an object")
         _validate(_validator(self.repo_root, PROFILE_SCHEMA), profile, "preview profile")
         self.profile = profile
+        self.embedding_origins = _embedding_origins(profile)
         self.profile_digest = _digest(profile)
         self.source_root = _profile_source(self.repo_root, profile)
         try:
@@ -340,6 +370,8 @@ class PreviewRuntime:
             "latest_receipt": self._latest_receipt(state),
             "operator_actions": ["start", "status", "restart", "stop", "proof"],
         }
+        if "embedding" in self.profile:
+            projection["embedding"] = {"allowed_origins": self.embedding_origins}
         _validate(_validator(self.repo_root, PROJECTION_SCHEMA), projection, "preview projection")
         return projection
 
@@ -680,6 +712,7 @@ def validate_profiles(repo_root: Path) -> list[str]:
             # to require the full, unchanged executable-profile schema.
             validated.append(path.relative_to(repo_root).as_posix())
             continue
+        _embedding_origins(profile)
         _profile_source(repo_root, profile, prototypes)
         validated.append(path.relative_to(repo_root).as_posix())
     return validated
@@ -706,10 +739,10 @@ def serve(runtime: PreviewRuntime, instance_id: str) -> None:
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(length))
             self.send_header("Cache-Control", "no-store")
-            self.send_header("Content-Security-Policy", "default-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'; worker-src 'none'; object-src 'none'; frame-ancestors 'none'")
+            for name, value in _preview_security_headers(runtime.profile).items():
+                self.send_header(name, value)
             self.send_header("Referrer-Policy", "no-referrer")
             self.send_header("X-Content-Type-Options", "nosniff")
-            self.send_header("X-Frame-Options", "DENY")
             self.end_headers()
 
         def do_GET(self) -> None:  # noqa: N802

@@ -11,6 +11,7 @@ import yaml
 from jsonschema import Draft202012Validator
 
 from packages.prototype_delivery_packet.contract import PacketError, content_digest
+from packages.prototype_preview.runtime import _embedding_origins, PreviewError
 from packages.prototype_landing.landing import SECRET_NAMES, SECRET_SUFFIXES
 
 
@@ -174,6 +175,12 @@ def plan_preview(repo_root: Path, request: dict[str, Any]) -> dict[str, Any]:
                       "retirement_rule": "Stop on owner request or retirement; browser-origin data requires explicit separate cleanup.",
                       "promotion_path": "Use approved Baseline and the existing Delivery packet before durable owner graduation."},
     }
+    if "embedding_origins" in request:
+        profile["embedding"] = {"allowed_origins": request["embedding_origins"]}
+        try:
+            _embedding_origins(profile)
+        except PreviewError as error:
+            raise PacketError(error.code, str(error)) from error
     _schema(root, "prototype-preview-profile.schema.json", profile)
     path = f"records/prototype-preview-profiles/{slug}.yaml"
     others = _git(root, "ls-tree", "-r", "--name-only", request["source_revision"],
